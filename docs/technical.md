@@ -1,5 +1,4 @@
 // docs/technical.md
-// docs/technical.md
 
 # ⚙️ Technical Documentation: Let's Talk (Next.js Monolith on VPS)
 
@@ -100,7 +99,7 @@ This document provides detailed technical information for developers working on 
 - **Manual Payment Flow (Student-Side):**
 
   1.  **Enrollment Intent:** User clicks "Enroll" on a paid course and is redirected to the payment instructions page.
-  2.  **Payment Instructions UI:** Frontend page (`/courses/[courseId]/enroll-pay`) displays static payment methods (QR image, bank/e-wallet details) and a suggested payment reference format. User is instructed to include a reference in the payment for easier identification.
+  2.  **Payment Instructions UI:** Frontend page (`/courses/[courseId]/enroll-pay`) displays static payment methods (QR image, bank/e-wallet details) and a suggested payment reference format. User is instructed to include a reference in their payment for easier identification.
   3.  **User Pays Manually:** User performs the transaction via their external banking/e-wallet app, including the suggested reference in the payment notes.
   4.  **Proof Upload & Enrollment Creation:** User returns to the `enroll-pay` page and uses a file input to select their payment proof screenshot. When they click "Submit Proof":
       - The frontend first calls `payment.initiateManualPayment` to create the `Enrollment` record (status: `PENDING_PAYMENT_CONFIRMATION`) and `Payment` record (status: `AWAITING_PAYMENT_PROOF`) with a unique `paymentReferenceId`.

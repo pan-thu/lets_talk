@@ -12,8 +12,8 @@
 | S8  | As a student, I want to enroll in a course so that I can access its materials. | Enrollment button; confirmation modal; notification |
 | S9  | As a student, I want to pay for course enrollment using bank transfer or wallet-to-wallet so that I can access paid content. | Payment gateway integration; transaction receipt; enrollment unlocked |
 | S10 | As a student, I want to visit an individual course page so that I can see my progress, marks, and weekly breakdown. | Progress bar; current grade; “Week 1, 2…” accordion sections |
-| S11 | As a student, I want to video‑courses to show lesson & test items under each week so that I can work through content sequentially. | List of lessons/tests per week; completion checkbox |
-| S12 | As a student, I want to live‑courses to show a Join Zoom button and a recording link under each week so that I can attend and review live lectures. | “Join Live” button (time‑locked); recording URL after session |
+| S11 | As a student, I want video‑courses to show lesson & test items under each week so that I can work through content sequentially. | List of lessons/tests per week; completion checkbox |
+| S12 | As a student, I want live‑courses to show a Join Zoom button and a recording link under each week so that I can attend and review live lectures. | “Join Live” button (time‑locked); recording URL after session |
 | S13 | As a student, I want to view a lesson page with embedded video or resource, report an issue, download the video, and ask a question so that I can learn and get help. | Video embed; “Report” form; download link; Q&A textbox |
 | S14 | As a student, I want to upload my test submissions (video) on a dedicated test page so that my teacher can grade me. | File upload widget; progress indicator; confirmation |
 | S15 | As a student, I want to see announcements in a dedicated Announcements page so that I don’t miss important updates. | List of announcements sorted by date; read/unread marker |
@@ -31,7 +31,7 @@
 | T2     | As a tutor, I want to recover and change my password so that I can manage my account securely. | “Forgot password” flow with email reset; change password form |
 | T3     | As a tutor, I want to update my profile (including profile picture) so that my information stays current. | Profile edit form; avatar upload; data validation |
 | T4     | As a tutor, I want to access a personalized dashboard showing upcoming sessions, pending grading tasks, recent activity, and a calendar so that I can prioritize my work. | Widgets for upcoming sessions, pending submissions, recent forum posts, calendar heatmap |
-| T5     | As a tutor, I want a persistent sidebar with links to Dashboard, Courses, Announcements, Blog, Calendar, Privacy & Policies, About Us, and Settings so that I can navigate the platform easily. | Sidebar highlighting active page; working links to each section |
+| T5     | As a tutor, I want a persistent sidebar with links to Dashboard, Courses, Announcements, Blog, Calendar, Privacy & Policies, About Us, and Settings so that I can navigate the platform easily. | Sidebar highlighting active page; working links to each section |
 | T6     | As a tutor, I want to view my assigned courses on a Courses page so that I can select which course to manage. | List of assigned courses; search/filter |
 | T7     | As a tutor, I want to visit an individual course page to see and manage its structure and content. | Course title, description, progress summary, management options |
 | T8     | As a tutor, I want to manage course structure by adding weeks, lessons, and tests (with marks) so that the content remains organized. | “Add Week” button; week/lesson/test creation forms; mark settings |
@@ -42,7 +42,7 @@
 | T14    | As a tutor, I want to answer student questions so that I can clarify doubts and support learning. | Q&A interface with threaded replies; notifications when questions are posted |
 | T15    | As a tutor, I want to view the Blog page so that I can stay informed about platform news and articles. | List of blog posts with search and “Read more” |
 | T16    | As a tutor, I want to view the Announcements page so that I can see all platform‑wide announcements. | Announcement list; date sorting; read/unread status |
-| T17    | As a tutor, I want to view the Privacy & Policies and About Us pages so that I understand platform terms and team info. | Static content pages; scrollable text |
+| T17    | As a tutor, I want to view the Privacy & Policies and About Us pages so that I understand platform terms and team info. | Static content pages; scrollable text |
 | T18    | As a tutor, I want to access the Settings page so that I can update my account information and notification preferences. | Settings form; toggle notifications; save confirmation |
 
 
@@ -53,7 +53,7 @@
 | A1     | As an admin, I want to log in and log out so that I can securely access the platform. | Login/logout via email/password or Google OAuth; session management |
 | A2     | As an admin, I want to recover and change my password so that I can manage my account securely. | “Forgot password” flow with email reset; change password form |
 | A3     | As an admin, I want to update my profile (including profile picture) so that my information stays current. | Profile edit form; avatar upload; validation |
-| A4     | As an admin, I want a persistent sidebar with links to Dashboard, Users, Courses, Payments, Analytics, Support, Announcements, Blog, Calendar, Privacy & Policies, About Us, and Settings so that I can navigate the platform easily. | Sidebar highlighting active page; working links |
+| A4     | As an admin, I want a persistent sidebar with links to Dashboard, Users, Courses, Payments, Analytics, Support, Announcements, Blog, Calendar, Privacy & Policies, About Us, and Settings so that I can navigate the platform easily. | Sidebar highlighting active page; working links |
 | A5     | As an admin, I want to access a personalized dashboard showing user & course stats, revenue, system health, and support tickets so that I can monitor and prioritize administration tasks. | Widgets for total users, active courses, total revenue, server status, open tickets |
 | A6     | As an admin, I want to manage user accounts so that I can create, update, suspend or delete users as needed. | User list with search/filter; create/edit/suspend/delete actions; audit logs |
 | A7     | As an admin, I want to assign and update user roles (Student, Tutor, Admin) so that permissions are enforced correctly. | Role dropdown on user edit; bulk role assignment; change history |
@@ -63,4 +63,4 @@
 | A11    | As an admin, I want to monitor platform usage and performance metrics so that I can ensure uptime and speed. | Real‑time charts for CPU/DB load, API response times, error rates |
 | A12    | As an admin, I want to handle support tickets and user inquiries so that user issues are addressed promptly. | Ticketing interface; assign to support staff; status updates; SLA tracking |
 | A13    | As an admin, I want to manage global announcements and blog posts so that I can communicate platform news. | Create/edit/delete announcements/blog; scheduling; rich‑text editor |
-| A14    | As an admin, I want to view the Privacy & Policies and About Us pages so that I can ensure legal compliance and accurate team info. | Static content editor; version history; publish/unpublish |
+| A14    | As an admin, I want to view the Privacy & Policies and About Us pages so that I can ensure legal compliance and accurate team info. | Static content editor; version history; publish/unpublish |

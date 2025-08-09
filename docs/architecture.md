@@ -1,5 +1,4 @@
 // docs/architecture.md
-// docs/architecture.md
 
 # 🏛️ Architecture Document: Let's Talk (Next.js Monolith on VPS)
 

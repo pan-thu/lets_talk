@@ -1,5 +1,4 @@
 // docs/lets_talk_prd.md
-// docs/lets_talk_prd.md
 
 # Product Requirements Document (PRD)
 
