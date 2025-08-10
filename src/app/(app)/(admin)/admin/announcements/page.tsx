@@ -18,6 +18,8 @@ import {
   Clock,
 } from "lucide-react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
+import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminAnnouncementsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,13 +47,13 @@ export default function AdminAnnouncementsPage() {
     data: announcementsData,
     isLoading: announcementsLoading,
     error: announcementsError,
-  } = api.admin.management.listAllAnnouncements.useQuery({
+  } = api.admin.content.listAllAnnouncements.useQuery({
     page: currentPage,
     limit: 12,
     search: searchTerm || undefined,
   });
 
-  const { data: courses } = api.admin.management.listAllCourses.useQuery({
+  const { data: courses } = api.admin.course.listAllCourses.useQuery({
     page: 1,
     limit: 100,
   });
@@ -59,9 +61,9 @@ export default function AdminAnnouncementsPage() {
   const utils = api.useUtils();
 
   const createAnnouncementMutation =
-    api.admin.management.createAnnouncement.useMutation({
+    api.admin.content.createAnnouncement.useMutation({
       onSuccess: () => {
-        utils.admin.management.listAllAnnouncements.invalidate();
+        utils.admin.content.listAllAnnouncements.invalidate();
         setIsCreateModalOpen(false);
         setAnnouncementForm({
           title: "",
@@ -77,9 +79,9 @@ export default function AdminAnnouncementsPage() {
     });
 
   const updateAnnouncementMutation =
-    api.admin.management.updateAnnouncement.useMutation({
+    api.admin.content.updateAnnouncement.useMutation({
       onSuccess: () => {
-        utils.admin.management.listAllAnnouncements.invalidate();
+        utils.admin.content.listAllAnnouncements.invalidate();
         setEditModalState({ isOpen: false, announcement: null });
         alert("Announcement updated successfully!");
       },
@@ -89,9 +91,9 @@ export default function AdminAnnouncementsPage() {
     });
 
   const deleteAnnouncementMutation =
-    api.admin.management.deleteAnnouncement.useMutation({
+    api.admin.content.deleteAnnouncement.useMutation({
       onSuccess: () => {
-        utils.admin.management.listAllAnnouncements.invalidate();
+        utils.admin.content.listAllAnnouncements.invalidate();
         setDeleteModalState({ isOpen: false, announcement: null });
         alert("Announcement deleted successfully!");
       },
@@ -354,98 +356,34 @@ export default function AdminAnnouncementsPage() {
       {/* Pagination */}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() =>
-                setCurrentPage(Math.min(pagination.pages, currentPage + 1))
-              }
-              disabled={currentPage === pagination.pages}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing{" "}
+              <span className="font-medium">
+                {(currentPage - 1) * 12 + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-medium">
+                {Math.min(currentPage * 12, pagination.total)}
+              </span>{" "}
+              of <span className="font-medium">{pagination.total}</span>{" "}
+              results
+            </p>
           </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing{" "}
-                <span className="font-medium">
-                  {(currentPage - 1) * 12 + 1}
-                </span>{" "}
-                to{" "}
-                <span className="font-medium">
-                  {Math.min(currentPage * 12, pagination.total)}
-                </span>{" "}
-                of <span className="font-medium">{pagination.total}</span>{" "}
-                results
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                {Array.from(
-                  { length: Math.min(5, pagination.pages) },
-                  (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                          currentPage === page
-                            ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            : "text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  },
-                )}
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(pagination.pages, currentPage + 1))
-                  }
-                  disabled={currentPage === pagination.pages}
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </nav>
-            </div>
-          </div>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={pagination.pages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 
       {/* Create Announcement Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Create Announcement
-              </h3>
-              <button
-                onClick={() => setIsCreateModalOpen(false)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
+      <AdminModalWrapper
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create Announcement"
+      >
               <div className="space-y-4">
                 <input
                   type="text"
@@ -562,26 +500,15 @@ export default function AdminAnnouncementsPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+        </AdminModalWrapper>
       )}
 
       {/* Edit Announcement Modal */}
-      {editModalState.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-          <div className="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit Announcement</h3>
-              <button
-                onClick={() => setEditModalState({ isOpen: false, announcement: null })}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>
-                ✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
+      <AdminModalWrapper
+        isOpen={editModalState.isOpen}
+        onClose={() => setEditModalState({ isOpen: false, announcement: null })}
+        title="Edit Announcement"
+      >
         <div className="space-y-4">
           <input
             type="text"
@@ -699,26 +626,15 @@ export default function AdminAnnouncementsPage() {
             </button>
           </div>
         </div>
-            </div>
-          </div>
-        </div>
+        </AdminModalWrapper>
       )}
 
       {/* Delete Announcement Modal */}
-      {deleteModalState.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-          <div className="max-h-screen w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">Delete Announcement</h3>
-              <button
-                onClick={() => setDeleteModalState({ isOpen: false, announcement: null })}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>
-                ✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
+      <AdminModalWrapper
+        isOpen={deleteModalState.isOpen}
+        onClose={() => setDeleteModalState({ isOpen: false, announcement: null })}
+        title="Delete Announcement"
+      >
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
             Are you sure you want to delete "
@@ -748,9 +664,7 @@ export default function AdminAnnouncementsPage() {
             </button>
           </div>
         </div>
-            </div>
-          </div>
-        </div>
+        </AdminModalWrapper>
       )}
     </div>
   );

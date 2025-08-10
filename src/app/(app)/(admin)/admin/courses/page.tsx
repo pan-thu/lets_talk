@@ -47,7 +47,7 @@ export default function AdminCoursesPage() {
     data: coursesData,
     isLoading,
     error,
-  } = api.admin.management.listAllCourses.useQuery({
+  } = api.admin.course.listAllCourses.useQuery({
     page: currentPage,
     limit: 6,
     search: searchTerm || undefined,
@@ -55,12 +55,12 @@ export default function AdminCoursesPage() {
     type: typeFilter,
   });
 
-  const { data: teachers } = api.admin.management.getAllTeachers.useQuery();
+  const { data: teachers } = api.admin.user.getAllTeachers.useQuery();
   const utils = api.useUtils();
 
-  const createCourseMutation = api.admin.management.createCourse.useMutation({
+  const createCourseMutation = api.admin.course.createCourse.useMutation({
     onSuccess: () => {
-      utils.admin.management.listAllCourses.invalidate();
+      utils.admin.course.listAllCourses.invalidate();
       setIsCreateModalOpen(false);
       setCourseForm({
         title: "",
@@ -76,9 +76,9 @@ export default function AdminCoursesPage() {
     onError: (error) => alert(`Error creating course: ${error.message}`),
   });
 
-  const updateCourseMutation = api.admin.management.updateCourse.useMutation({
+  const updateCourseMutation = api.admin.course.updateCourse.useMutation({
     onSuccess: () => {
-      utils.admin.management.listAllCourses.invalidate();
+      utils.admin.course.listAllCourses.invalidate();
       setEditModalState({ isOpen: false, course: null });
       alert("Course updated successfully!");
     },

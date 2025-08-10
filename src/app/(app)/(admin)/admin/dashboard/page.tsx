@@ -117,7 +117,7 @@ export default function AdminDashboard() {
     data: stats,
     isLoading,
     error,
-  } = api.admin.management.getDashboardStats.useQuery();
+  } = api.admin.dashboard.getDashboardStats.useQuery();
 
   if (isLoading) {
     return (

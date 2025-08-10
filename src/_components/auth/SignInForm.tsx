@@ -42,7 +42,7 @@ export function SignInForm() {
         callbackUrl, // Pass intended redirect URL
       });
 
-      console.log("Sign-in result:", result); // Debug log
+
 
       if (result?.error) {
         // Error occurred (e.g., invalid credentials, user not found)

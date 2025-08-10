@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Role } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
+import { PaginationControls } from "~/_components/shared/PaginationControls";
 
 export default function AdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,7 +57,7 @@ export default function AdminUsersPage() {
     data: usersData,
     isLoading,
     error,
-  } = api.admin.management.listUsers.useQuery({
+  } = api.admin.user.listUsers.useQuery({
     page: currentPage,
     limit: 20,
     search: searchTerm || undefined,
@@ -64,9 +65,9 @@ export default function AdminUsersPage() {
 
   const utils = api.useUtils();
 
-  const createTeacherMutation = api.admin.management.createTeacher.useMutation({
+  const createTeacherMutation = api.admin.user.createTeacher.useMutation({
     onSuccess: () => {
-      utils.admin.management.listUsers.invalidate();
+      utils.admin.user.listUsers.invalidate();
       setIsCreateTeacherModalOpen(false);
       setTeacherForm({ name: "", email: "", password: "" });
       alert("Teacher created successfully!");
@@ -76,9 +77,9 @@ export default function AdminUsersPage() {
     },
   });
 
-  const updateUserMutation = api.admin.management.updateUser.useMutation({
+  const updateUserMutation = api.admin.user.updateUser.useMutation({
     onSuccess: () => {
-      utils.admin.management.listUsers.invalidate();
+      utils.admin.user.listUsers.invalidate();
       setEditUserModalState({ isOpen: false, user: null });
       alert("User updated successfully!");
     },
@@ -87,9 +88,9 @@ export default function AdminUsersPage() {
     },
   });
 
-  const deleteUserMutation = api.admin.management.deleteUser.useMutation({
+  const deleteUserMutation = api.admin.user.deleteUser.useMutation({
     onSuccess: () => {
-      utils.admin.management.listUsers.invalidate();
+      utils.admin.user.listUsers.invalidate();
       setDeleteUserModalState({ isOpen: false, user: null });
       alert("User deleted successfully!");
     },
@@ -367,79 +368,25 @@ export default function AdminUsersPage() {
       {/* Pagination */}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() =>
-                setCurrentPage(Math.min(pagination.pages, currentPage + 1))
-              }
-              disabled={currentPage === pagination.pages}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing{" "}
+              <span className="font-medium">
+                {(currentPage - 1) * 20 + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-medium">
+                {Math.min(currentPage * 20, pagination.total)}
+              </span>{" "}
+              of <span className="font-medium">{pagination.total}</span>{" "}
+              results
+            </p>
           </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing{" "}
-                <span className="font-medium">
-                  {(currentPage - 1) * 20 + 1}
-                </span>{" "}
-                to{" "}
-                <span className="font-medium">
-                  {Math.min(currentPage * 20, pagination.total)}
-                </span>{" "}
-                of <span className="font-medium">{pagination.total}</span>{" "}
-                results
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                {Array.from(
-                  { length: Math.min(5, pagination.pages) },
-                  (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                          currentPage === page
-                            ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            : "text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  },
-                )}
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(pagination.pages, currentPage + 1))
-                  }
-                  disabled={currentPage === pagination.pages}
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </nav>
-            </div>
-          </div>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={pagination.pages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 
