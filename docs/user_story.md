@@ -2,8 +2,8 @@
 
 | **ID** | **User Story** | **Acceptance Criteria (Summary)** |
 |--------|----------------|------------------------------------|
-| S1  | As a student, I want to register and create an account so that I can access the platform's resources. | Registration form (email & Google OAuth), email verification, editable profile |
-| S2  | As a student, I want to log in and log out so that I can securely access and exit the platform. | Login via email/password or Google; logout button |
+| S1  | As a student, I want to register and create an account so that I can access the platform's resources. | Registration form (email & password), email verification, editable profile |
+| S2  | As a student, I want to log in and log out so that I can securely access and exit the platform. | Login via email/password; logout button |
 | S3  | As a student, I want to recover my password so that I can regain access if I forget it. | “Forgot password” flow; reset email link; change password form |
 | S4  | As a student, I want to update my profile (including profile picture) so that my personal information stays current. | Profile edit form; avatar upload; validation |
 | S5  | As a student, I want to access a personalized dashboard showing today’s tasks, grades, and a “work calendar” so that I have a clear overview of my progress. | “Today’s tasks” list; grade summary; calendar heatmap like GitHub contributions |
@@ -27,7 +27,7 @@
 
 | **ID** | **User Story** | **Acceptance Criteria (Summary)** |
 |--------|----------------|------------------------------------|
-| T1     | As a tutor, I want to log in and log out so that I can securely access the platform. | Login/logout via email/password or Google OAuth; session management |
+| T1     | As a tutor, I want to log in and log out so that I can securely access the platform. | Login/logout via email/password; session management |
 | T2     | As a tutor, I want to recover and change my password so that I can manage my account securely. | “Forgot password” flow with email reset; change password form |
 | T3     | As a tutor, I want to update my profile (including profile picture) so that my information stays current. | Profile edit form; avatar upload; data validation |
 | T4     | As a tutor, I want to access a personalized dashboard showing upcoming sessions, pending grading tasks, recent activity, and a calendar so that I can prioritize my work. | Widgets for upcoming sessions, pending submissions, recent forum posts, calendar heatmap |
@@ -50,7 +50,7 @@
 
 | **ID** | **User Story** | **Acceptance Criteria (Summary)** |
 |--------|----------------|------------------------------------|
-| A1     | As an admin, I want to log in and log out so that I can securely access the platform. | Login/logout via email/password or Google OAuth; session management |
+| A1     | As an admin, I want to log in and log out so that I can securely access the platform. | Login/logout via email/password; session management |
 | A2     | As an admin, I want to recover and change my password so that I can manage my account securely. | “Forgot password” flow with email reset; change password form |
 | A3     | As an admin, I want to update my profile (including profile picture) so that my information stays current. | Profile edit form; avatar upload; validation |
 | A4     | As an admin, I want a persistent sidebar with links to Dashboard, Users, Courses, Payments, Analytics, Support, Announcements, Blog, Calendar, Privacy & Policies, About Us, and Settings so that I can navigate the platform easily. | Sidebar highlighting active page; working links |

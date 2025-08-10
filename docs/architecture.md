@@ -61,7 +61,7 @@ graph TD
 
     style B fill:#f9f,stroke:#333,stroke-width:2px
     style D fill:#9c9,stroke:#333,stroke-width:2px
-    style VD_CDN fill:#lightblue,stroke:#333,stroke-width:2px
+    style VD_CDN fill:#lightblue,stroke:#333,stroke-width:1px
     style MP_UploadProof fill:#fcf,stroke:#333,stroke-width:1px
 ```
 
@@ -127,8 +127,9 @@ The Next.js application follows a T3 Stack-influenced structure with **role-base
 │ │ ├── **middleware.ts** -- Role-based route protection
 │ │ │
 │ │ ├── **(app)/** -------- Main application routes with role-based groups
+│ │ │ ├── **layout.tsx** -- App layout with sidebar and mobile header
 │ │ │ ├── **(admin)/** ---- Admin-only routes (requires ADMIN role)
-│ │ │ │ └── **admin/test/** -- Admin test page
+│ │ │ │ └── **admin/** -- Admin dashboard and management pages
 │ │ │ │
 │ │ │ ├── **(global)/** --- Shared routes accessible by all authenticated users
 │ │ │ │ ├── **announcements/** -- Public announcements
@@ -136,27 +137,30 @@ The Next.js application follows a T3 Stack-influenced structure with **role-base
 │ │ │ │ └── **calendar/** ---- Calendar functionality
 │ │ │ │
 │ │ │ ├── **(student)/** -- Student-specific routes (requires STUDENT role)
-│ │ │ │ ├── **layout.tsx** -- Student layout with sidebar
 │ │ │ │ ├── **dashboard/** -- Student dashboard
-│ │ │ │ └── **courses/[courseId]/enroll-pay/** -- Payment instructions & proof upload
+│ │ │ │ └── **courses/** -- Course enrollment & learning
 │ │ │ │
 │ │ │ └── **(teacher)/** -- Teacher-specific routes (requires TEACHER or ADMIN role)
-│ │ │ └── **teacher/courses/** -- Teacher course management
+│ │ │ └── **teacher/** -- Teacher course management
 │ │ │
 │ │ ├── **auth/** --------- Authentication pages (sign-in, sign-up)
 │ │ └── **api/** --------- Next.js API Routes (auth, tRPC)
 │ │
-│ ├── **\_components/** ---- React Components with Organized Structure
-│ │ ├── **Sidebar.tsx** -- Global sidebar with role-based navigation
-│ │ ├── **ui/** ---------- Reusable UI components (BreadcrumbsWithAnimation, ConfirmationToast)
-│ │ ├── **shared/** ------ Shared business components (AnnouncementCard, BlogPostCard, CourseCard)
-│ │ └── **student/** ----- Student-specific components (Dashboard, Lesson, Calendar components)
+│ ├── **_components/** ---- React Components with Organized Structure
+│ │ ├── **layouts/** ----- Layout components (Sidebar, MobileHeader, UserProfile)
+│ │ ├── **ui/** ---------- Reusable UI components (AdminModalWrapper, BreadcrumbsWithAnimation, ConfirmationToast)
+│ │ ├── **features/** ---- Feature-specific components organized by role
+│ │ │ ├── **shared/** ---- Shared business components (AnnouncementCard, BlogPostCard, CourseCard, etc.)
+│ │ │ ├── **student/** --- Student-specific components (DashboardMetricCard, ProgressBarDisplay, etc.)
+│ │ │ ├── **teacher/** --- Teacher-specific components
+│ │ │ └── **admin/** ----- Admin-specific components
+│ │ └── **auth/** -------- Authentication components (SignInForm, SignUpForm)
 │ │
 │ ├── **server/** --------- Server-side Logic with Domain-Driven tRPC Architecture
 │ │ ├── **api/routers/** -- Domain-organized tRPC routers
 │ │ │ ├── **_app.ts** ---- Main application router (orchestrates all domain routers)
 │ │ │ ├── **auth.ts** ---- Authentication procedures
-│ │ │ ├── **user.router.ts** -- User profile and management procedures
+│ │ │ ├── **user.ts** ---- User profile and management procedures
 │ │ │ ├── **student/** --- Student domain-specific routers
 │ │ │ │ ├── **index.ts** -- Student domain router aggregator
 │ │ │ │ ├── **course.router.ts** -- Student course operations (enroll, view progress, etc.)
@@ -170,7 +174,12 @@ The Next.js application follows a T3 Stack-influenced structure with **role-base
 │ │ │ │ └── **liveSession.router.ts** -- Live session management
 │ │ │ ├── **admin/** ----- Admin domain-specific routers
 │ │ │ │ ├── **index.ts** -- Admin domain router aggregator
-│ │ │ │ └── **management.router.ts** -- Platform administration
+│ │ │ │ ├── **content.router.ts** -- Content management (announcements, blog)
+│ │ │ │ ├── **course.router.ts** -- Course administration
+│ │ │ │ ├── **dashboard.router.ts** -- Admin dashboard data
+│ │ │ │ ├── **payment.router.ts** -- Payment review and management
+│ │ │ │ ├── **support.router.ts** -- Support ticket management
+│ │ │ │ └── **user.router.ts** -- User management
 │ │ │ └── **public/** ---- Public (non-authenticated) routers
 │ │ │ ├── **index.ts** -- Public domain router aggregator
 │ │ │ ├── **announcement.router.ts** -- Public announcements
@@ -242,10 +251,13 @@ api.user.updateProfile.useMutation()
 
 Components are organized by scope and reusability:
 
+- **`_components/layouts/`**: Layout components (Sidebar, MobileHeader, UserProfile)
 - **`_components/ui/`**: Pure UI components with no business logic
-- **`_components/shared/`**: Business components used across multiple user roles
-- **`_components/student/`**: Student-specific components with domain logic
-- **`_components/Sidebar.tsx`**: Global navigation component with role-based conditional rendering
+- **`_components/features/shared/`**: Business components used across multiple user roles
+- **`_components/features/student/`**: Student-specific components with domain logic
+- **`_components/features/teacher/`**: Teacher-specific components
+- **`_components/features/admin/`**: Admin-specific components
+- **`_components/auth/`**: Authentication components
 
 ## 6. Data Model
 

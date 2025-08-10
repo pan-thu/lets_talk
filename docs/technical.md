@@ -128,30 +128,34 @@ The application follows a **role-based route group architecture** for clear sepa
 src/
 ├── app/
 │   ├── (app)/                    # Main application with role-based groups
+│   │   ├── layout.tsx           # App layout with sidebar and mobile header
 │   │   ├── (admin)/             # Admin-only routes (Role: ADMIN)
-│   │   │   └── admin/test/      # Admin test functionality
+│   │   │   └── admin/           # Admin dashboard and management pages
 │   │   ├── (global)/            # Shared routes (All authenticated users)
 │   │   │   ├── announcements/  # Public announcements
 │   │   │   ├── blog/           # Blog posts and articles
 │   │   │   └── calendar/       # Calendar functionality
 │   │   ├── (student)/          # Student-specific routes (Role: STUDENT)
-│   │   │   ├── layout.tsx      # Student layout with sidebar
 │   │   │   ├── dashboard/      # Student dashboard
 │   │   │   └── courses/        # Course enrollment & learning
 │   │   └── (teacher)/          # Teacher routes (Role: TEACHER or ADMIN)
-│   │       └── teacher/courses/ # Course management interface
+│   │       └── teacher/        # Teacher course management
 │   ├── auth/                    # Authentication pages
 │   └── api/                     # NextAuth & tRPC API routes
 ├── _components/
-│   ├── Sidebar.tsx             # Global navigation with role-based links
-│   ├── ui/                     # Pure UI components (BreadcrumbsWithAnimation, etc.)
-│   ├── shared/                 # Business components (CourseCard, AnnouncementCard, etc.)
-│   └── student/                # Student-specific components (Dashboard, Lesson, etc.)
+│   ├── layouts/                 # Layout components (Sidebar, MobileHeader, UserProfile)
+│   ├── ui/                     # Pure UI components (AdminModalWrapper, BreadcrumbsWithAnimation, etc.)
+│   ├── features/               # Feature-specific components organized by role
+│   │   ├── shared/             # Business components (CourseCard, AnnouncementCard, etc.)
+│   │   ├── student/            # Student-specific components (DashboardMetricCard, ProgressBarDisplay, etc.)
+│   │   ├── teacher/            # Teacher-specific components
+│   │   └── admin/              # Admin-specific components
+│   └── auth/                   # Authentication components (SignInForm, SignUpForm)
 ├── server/
 │   └── api/routers/           # Domain-driven tRPC routers
 │       ├── _app.ts            # Main application router (orchestrates all domains)
 │       ├── auth.ts            # Authentication procedures
-│       ├── user.router.ts     # User profile and management procedures
+│       ├── user.ts            # User profile and management procedures
 │       ├── student/           # Student domain-specific routers
 │       │   ├── index.ts       # Student domain router aggregator
 │       │   ├── course.router.ts    # Student course operations
@@ -165,7 +169,12 @@ src/
 │       │   └── liveSession.router.ts # Live session management
 │       ├── admin/             # Admin domain-specific routers
 │       │   ├── index.ts       # Admin domain router aggregator
-│       │   └── management.router.ts # Platform administration
+│       │   ├── content.router.ts   # Content management (announcements, blog)
+│       │   ├── course.router.ts    # Course administration
+│       │   ├── dashboard.router.ts # Admin dashboard data
+│       │   ├── payment.router.ts   # Payment review and management
+│       │   ├── support.router.ts   # Support ticket management
+│       │   └── user.router.ts      # User management
 │       └── public/            # Public (non-authenticated) routers
 │           ├── index.ts       # Public domain router aggregator
 │           ├── announcement.router.ts # Public announcements

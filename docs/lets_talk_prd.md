@@ -84,17 +84,34 @@ Cloudflare R2/S3 (Stores Payment Proofs & Video Assets)
 ├── src/ ---------------- Main Source Code Directory
 │ │
 │ ├── app/ ------------ Next.js App Router Directory
-│ │ ├── (app)/courses/[courseId]/enroll-pay/ -- Page for payment instructions & proof upload
-│ │ ├── \_components/ -- UI Components
-│ │ │ └── payment/ ---- Payment related UI components (e.g., ProofUploadForm.tsx)
-│ │ ├── api/ -------- Next.js API Routes (auth, trpc)
-│ │ └── ... (other app routes)
+│ │ ├── (app)/ -------- Main application with role-based groups
+│ │ │ ├── layout.tsx -- App layout with sidebar and mobile header
+│ │ │ ├── (admin)/ ---- Admin-only routes (requires ADMIN role)
+│ │ │ ├── (global)/ --- Shared routes (announcements, blog, calendar)
+│ │ │ ├── (student)/ -- Student-specific routes (dashboard, courses)
+│ │ │ └── (teacher)/ -- Teacher-specific routes (course management)
+│ │ ├── auth/ -------- Authentication pages (sign-in, sign-up)
+│ │ └── api/ --------- Next.js API Routes (auth, tRPC)
+│ │
+│ ├── _components/ ----- React Components with Organized Structure
+│ │ ├── layouts/ ----- Layout components (Sidebar, MobileHeader, UserProfile)
+│ │ ├── ui/ ---------- Reusable UI components
+│ │ ├── features/ ---- Feature-specific components organized by role
+│ │ │ ├── shared/ ---- Shared business components
+│ │ │ ├── student/ --- Student-specific components
+│ │ │ ├── teacher/ --- Teacher-specific components
+│ │ │ └── admin/ ----- Admin-specific components
+│ │ └── auth/ -------- Authentication components
 │ │
 │ ├── server/ --------- Server-side Logic
-│ │ ├── api/ -------- tRPC API Definition
-│ │ │ ├── routers/
-│ │ │ │ └── payment.ts -- tRPC router for payment initiation and proof submission
-│ │ │ └── ... (other routers)
+│ │ ├── api/routers/ -- Domain-organized tRPC routers
+│ │ │ ├── _app.ts ---- Main application router
+│ │ │ ├── auth.ts ---- Authentication procedures
+│ │ │ ├── user.ts ---- User profile and management
+│ │ │ ├── student/ --- Student domain-specific routers
+│ │ │ ├── teacher/ --- Teacher domain-specific routers
+│ │ │ ├── admin/ ----- Admin domain-specific routers
+│ │ │ └── public/ ---- Public (non-authenticated) routers
 │ │ └── ... (auth, db)
 │ │
 │ ├── styles/ --------- Global Stylesheets
