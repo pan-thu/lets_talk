@@ -6,7 +6,7 @@ import { BlogPostCard } from "~/_components/shared/BlogPostCard";
 import { PaginationControls } from "~/_components/shared/PaginationControls";
 import { api } from "~/trpc/react";
 
-export default function BlogPage() {
+export default function TeacherBlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, error } = api.public.blog.listPublished.useQuery({
     page: currentPage,
@@ -73,5 +73,3 @@ export default function BlogPage() {
     </div>
   );
 }
-
-

@@ -19,6 +19,7 @@ import {
 import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminBlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -416,7 +417,7 @@ export default function AdminBlogPage() {
       )}
 
       {/* Create Blog Post Modal */}
-      <Modal
+      <AdminModalWrapper
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Create Blog Post"
@@ -509,10 +510,10 @@ export default function AdminBlogPage() {
             </button>
           </div>
         </div>
-      </Modal>
+      </AdminModalWrapper>
 
       {/* Edit Blog Post Modal */}
-      <Modal
+      <AdminModalWrapper
         isOpen={editModalState.isOpen}
         onClose={() => setEditModalState({ isOpen: false, post: null })}
         title="Edit Blog Post"
@@ -605,10 +606,10 @@ export default function AdminBlogPage() {
             </button>
           </div>
         </div>
-      </Modal>
+      </AdminModalWrapper>
 
       {/* Delete Blog Post Modal */}
-      <Modal
+      <AdminModalWrapper
         isOpen={deleteModalState.isOpen}
         onClose={() => setDeleteModalState({ isOpen: false, post: null })}
         title="Delete Blog Post"
@@ -639,7 +640,7 @@ export default function AdminBlogPage() {
             </button>
           </div>
         </div>
-      </Modal>
+      </AdminModalWrapper>
     </div>
   );
 }

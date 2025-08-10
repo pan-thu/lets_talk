@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminPaymentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -362,63 +363,48 @@ export default function AdminPaymentsPage() {
       )}
 
       {/* Reject Payment Modal */}
-      {rejectionModalState.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Reject Payment
-              </h3>
-              <button
-                onClick={() =>
-                  setRejectionModalState({ isOpen: false, payment: null })
-                }
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  Provide a reason for rejecting this payment:
-                </p>
-                <textarea
-                  placeholder="Enter rejection reason..."
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setRejectionModalState({ isOpen: false, payment: null })
-                    }
-                    disabled={rejectPaymentMutation.isPending}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRejectConfirm}
-                    disabled={
-                      !rejectionReason.trim() || rejectPaymentMutation.isPending
-                    }
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {rejectPaymentMutation.isPending
-                      ? "Rejecting..."
-                      : "Reject Payment"}
-                  </button>
-                </div>
-              </div>
-            </div>
+      <AdminModalWrapper
+        isOpen={rejectionModalState.isOpen}
+        onClose={() => setRejectionModalState({ isOpen: false, payment: null })}
+        title="Reject Payment"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Provide a reason for rejecting this payment:
+          </p>
+          <textarea
+            placeholder="Enter rejection reason..."
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            rows={4}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() =>
+                setRejectionModalState({ isOpen: false, payment: null })
+              }
+              disabled={rejectPaymentMutation.isPending}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleRejectConfirm}
+              disabled={
+                !rejectionReason.trim() || rejectPaymentMutation.isPending
+              }
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {rejectPaymentMutation.isPending
+                ? "Rejecting..."
+                : "Reject Payment"}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { AnnouncementCard } from "~/_components/shared/AnnouncementCard";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 
-export default function AnnouncementsPage() {
+export default function StudentAnnouncementsPage() {
   const {
     data: announcements,
     isLoading,
@@ -64,5 +64,3 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
-
-

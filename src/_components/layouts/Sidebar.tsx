@@ -52,6 +52,22 @@ export function Sidebar() {
   const iconSize = isCollapsed ? 20 : 20;
   const userRole = profileData?.role;
 
+  // DYNAMIC HREFS
+  let announcementsHref = "/announcements";
+  let blogHref = "/blog";
+  let calendarHref = "/calendar";
+  
+  if (userRole === Role.TEACHER) {
+    announcementsHref = "/teacher/announcements";
+    blogHref = "/teacher/blog";
+    calendarHref = "/teacher/calendar";
+  } else if (userRole === Role.ADMIN) {
+    // For admins, links point to their management pages or specific calendar view
+    announcementsHref = "/admin/announcements";
+    blogHref = "/admin/blog";
+    calendarHref = "/admin/calendar";
+  }
+
   return (
     <>
       <aside
@@ -262,9 +278,9 @@ export function Sidebar() {
           {/* Global Links - hide redundant ones for admin users */}
           {userRole !== Role.ADMIN && (
             <Link
-              href="/announcements"
+              href={announcementsHref}
               className={`sidebar-item flex items-center gap-3 rounded ${
-                pathname === "/announcements" ? "active" : ""
+                pathname.startsWith(announcementsHref) ? "active" : ""
               } ${
                 isCollapsed ? "justify-center py-3" : "px-3 py-2"
               } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
@@ -275,9 +291,9 @@ export function Sidebar() {
             </Link>
           )}
           <Link
-            href="/calendar"
+            href={calendarHref}
             className={`sidebar-item flex items-center gap-3 rounded ${
-              pathname === "/calendar" ? "active" : ""
+              pathname.startsWith(calendarHref) ? "active" : ""
             } ${
               isCollapsed ? "justify-center py-3" : "px-3 py-2"
             } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
@@ -288,9 +304,9 @@ export function Sidebar() {
           </Link>
           {userRole !== Role.ADMIN && (
             <Link
-              href="/blog"
+              href={blogHref}
               className={`sidebar-item flex items-center gap-3 rounded ${
-                pathname.startsWith("/blog") ? "active" : ""
+                pathname.startsWith(blogHref) ? "active" : ""
               } ${
                 isCollapsed ? "justify-center py-3" : "px-3 py-2"
               } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}

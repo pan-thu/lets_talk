@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { CourseStatus, CourseType } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminCoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -307,24 +308,11 @@ export default function AdminCoursesPage() {
       {/* Pagination Controls Here */}
 
       {/* Working Create Course Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Create New Course
-              </h3>
-              <button
-                onClick={() => setIsCreateModalOpen(false)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="px-6 py-4">
+      <AdminModalWrapper
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create New Course"
+      >
               <div className="space-y-4">
                 <input
                   type="text"
@@ -445,7 +433,7 @@ export default function AdminCoursesPage() {
             </div>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
 
       {/* TODO: Add edit modal functionality later */}
     </div>

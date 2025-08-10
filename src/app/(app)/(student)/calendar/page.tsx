@@ -16,7 +16,7 @@ interface StaticEvent {
   color?: string;
 }
 
-export default function CalendarPage() {
+export default function StudentCalendarPage() {
   const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date());
   const [today, setToday] = useState(new Date());
   const [isMobileView, setIsMobileView] = useState(false);
@@ -105,5 +105,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-

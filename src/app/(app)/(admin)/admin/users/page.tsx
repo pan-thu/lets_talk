@@ -21,6 +21,7 @@ import {
 import { Role } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -391,207 +392,168 @@ export default function AdminUsersPage() {
       )}
 
       {/* Create Teacher Modal */}
-      {isCreateTeacherModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Create Teacher Account
-              </h3>
-              <button
-                onClick={() => setIsCreateTeacherModalOpen(false)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  value={teacherForm.name}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, name: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  value={teacherForm.email}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, email: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <input
-                  type="password"
-                  placeholder="Password (min 8 characters)"
-                  value={teacherForm.password}
-                  onChange={(e) =>
-                    setTeacherForm({ ...teacherForm, password: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateTeacherModalOpen(false)}
-                    disabled={createTeacherMutation.isPending}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCreateTeacher}
-                    disabled={
-                      !teacherForm.name ||
-                      !teacherForm.email ||
-                      !teacherForm.password ||
-                      createTeacherMutation.isPending
-                    }
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {createTeacherMutation.isPending
-                      ? "Creating..."
-                      : "Create Teacher"}
-                  </button>
-                </div>
-              </div>
-            </div>
+      <AdminModalWrapper
+        isOpen={isCreateTeacherModalOpen}
+        onClose={() => setIsCreateTeacherModalOpen(false)}
+        title="Create Teacher Account"
+      >
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={teacherForm.name}
+            onChange={(e) =>
+              setTeacherForm({ ...teacherForm, name: e.target.value })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={teacherForm.email}
+            onChange={(e) =>
+              setTeacherForm({ ...teacherForm, email: e.target.value })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <input
+            type="password"
+            placeholder="Password (min 8 characters)"
+            value={teacherForm.password}
+            onChange={(e) =>
+              setTeacherForm({ ...teacherForm, password: e.target.value })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() => setIsCreateTeacherModalOpen(false)}
+              disabled={createTeacherMutation.isPending}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateTeacher}
+              disabled={
+                !teacherForm.name ||
+                !teacherForm.email ||
+                !teacherForm.password ||
+                createTeacherMutation.isPending
+              }
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {createTeacherMutation.isPending
+                ? "Creating..."
+                : "Create Teacher"}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
 
       {/* Edit User Modal */}
-      {editUserModalState.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit User</h3>
-              <button
-                onClick={() =>
-                  setEditUserModalState({ isOpen: false, user: null })
-                }
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  value={editForm.email}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, email: e.target.value })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <select
-                  value={editForm.role}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, role: e.target.value as Role })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value={Role.STUDENT}>Student</option>
-                  <option value={Role.TEACHER}>Teacher</option>
-                  <option value={Role.ADMIN}>Admin</option>
-                </select>
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditUserModalState({ isOpen: false, user: null })
-                    }
-                    disabled={updateUserMutation.isPending}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleEditUser}
-                    disabled={
-                      !editForm.name ||
-                      !editForm.email ||
-                      updateUserMutation.isPending
-                    }
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {updateUserMutation.isPending
-                      ? "Updating..."
-                      : "Update User"}
-                  </button>
-                </div>
-              </div>
-            </div>
+      <AdminModalWrapper
+        isOpen={editUserModalState.isOpen}
+        onClose={() => setEditUserModalState({ isOpen: false, user: null })}
+        title="Edit User"
+      >
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={editForm.name}
+            onChange={(e) =>
+              setEditForm({ ...editForm, name: e.target.value })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={editForm.email}
+            onChange={(e) =>
+              setEditForm({ ...editForm, email: e.target.value })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+          <select
+            value={editForm.role}
+            onChange={(e) =>
+              setEditForm({ ...editForm, role: e.target.value as Role })
+            }
+            className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value={Role.STUDENT}>Student</option>
+            <option value={Role.TEACHER}>Teacher</option>
+            <option value={Role.ADMIN}>Admin</option>
+          </select>
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() =>
+                setEditUserModalState({ isOpen: false, user: null })
+              }
+              disabled={updateUserMutation.isPending}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleEditUser}
+              disabled={
+                !editForm.name ||
+                !editForm.email ||
+                updateUserMutation.isPending
+              }
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {updateUserMutation.isPending
+                ? "Updating..."
+                : "Update User"}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
 
       {/* Delete User Modal */}
-      {deleteUserModalState.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-          <div className="max-h-screen w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-medium text-gray-900">Delete User</h3>
-              <button
-                onClick={() =>
-                  setDeleteUserModalState({ isOpen: false, user: null })
-                }
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              >
-                <span className="sr-only">Close</span>✕
-              </button>
-            </div>
-            <div className="px-6 py-4">
-              <div className="space-y-4">
-                <p className="text-sm text-gray-500">
-                  Are you sure you want to delete{" "}
-                  {deleteUserModalState.user?.name ?? "this user"}? This action
-                  cannot be undone.
-                </p>
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDeleteUserModalState({ isOpen: false, user: null })
-                    }
-                    disabled={deleteUserMutation.isPending}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteUser}
-                    disabled={deleteUserMutation.isPending}
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {deleteUserMutation.isPending
-                      ? "Deleting..."
-                      : "Delete User"}
-                  </button>
-                </div>
-              </div>
-            </div>
+      <AdminModalWrapper
+        isOpen={deleteUserModalState.isOpen}
+        onClose={() => setDeleteUserModalState({ isOpen: false, user: null })}
+        title="Delete User"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Are you sure you want to delete{" "}
+            {deleteUserModalState.user?.name ?? "this user"}? This action
+            cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() =>
+                setDeleteUserModalState({ isOpen: false, user: null })
+              }
+              disabled={deleteUserMutation.isPending}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteUser}
+              disabled={deleteUserMutation.isPending}
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleteUserMutation.isPending
+                ? "Deleting..."
+                : "Delete User"}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
     </div>
   );
 }

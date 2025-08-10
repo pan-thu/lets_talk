@@ -20,6 +20,7 @@ import {
 import { TicketStatus, TicketPriority } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 
 export default function AdminSupportPage() {
@@ -463,7 +464,7 @@ export default function AdminSupportPage() {
       )}
 
       {/* Ticket Detail Modal */}
-      <Modal
+      <AdminModalWrapper
         isOpen={detailModalState.isOpen}
         onClose={() => setDetailModalState({ isOpen: false, ticket: null })}
         title="Ticket Details"
@@ -550,10 +551,10 @@ export default function AdminSupportPage() {
               )}
           </div>
         )}
-      </Modal>
+      </AdminModalWrapper>
 
       {/* Response Modal */}
-      <Modal
+      <AdminModalWrapper
         isOpen={responseModalState.isOpen}
         onClose={() => setResponseModalState({ isOpen: false, ticket: null })}
         title="Add Response"
@@ -594,7 +595,7 @@ export default function AdminSupportPage() {
             </button>
           </div>
         </div>
-      </Modal>
+      </AdminModalWrapper>
     </div>
   );
 }
