@@ -48,10 +48,10 @@ export default function TeacherAnnouncementsPage() {
               key={announcement.id}
               id={announcement.id}
               title={announcement.title}
-              excerpt={announcement.excerpt}
+              excerpt={(announcement as any).excerpt ?? (announcement as any).content ?? ""}
               date={formatDate(announcement.createdAt)}
-              content={announcement.content}
-              author={announcement.author}
+              content={undefined}
+              author={(announcement as any).author ?? undefined}
               isLatest={index === 0}
             />
           ))}

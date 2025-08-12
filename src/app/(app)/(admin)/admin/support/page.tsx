@@ -91,11 +91,11 @@ export default function AdminSupportPage() {
 
   // Handlers
   const handleStatusUpdate = (ticketId: string, status: TicketStatus) => {
-    updateTicketStatusMutation.mutate({ ticketId, status });
+    updateTicketStatusMutation.mutate({ id: ticketId, status });
   };
 
   const handleAssignTicket = (ticketId: string, adminId: string) => {
-    assignTicketMutation.mutate({ ticketId, adminId });
+    assignTicketMutation.mutate({ ticketId, assignedToId: adminId });
   };
 
   const handleAddResponse = () => {
@@ -185,9 +185,11 @@ export default function AdminSupportPage() {
     );
   }
 
-  const { tickets, pagination } = ticketsData || {
-    tickets: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const tickets = ticketsData?.tickets ?? [];
+  const pagination = {
+    page: ticketsData?.currentPage ?? 1,
+    pages: ticketsData?.pages ?? 1,
+    total: ticketsData?.total ?? 0,
   };
 
   const stats = {
@@ -351,7 +353,7 @@ export default function AdminSupportPage() {
                         {ticket.subject}
                       </div>
                       <div className="text-sm text-gray-500">
-                        by {ticket.user?.name || "Unknown"}
+                        by {(ticket as any).student?.name || "Unknown"}
                       </div>
                     </div>
                   </td>
@@ -378,9 +380,9 @@ export default function AdminSupportPage() {
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                     <div className="flex items-center gap-2">
                       <select
-                        value={ticket.assignedToId || ""}
+                        value={(ticket as any).assignedToId || ""}
                         onChange={(e) =>
-                          handleAssignTicket(ticket.id, e.target.value)
+                          handleAssignTicket(String(ticket.id), e.target.value)
                         }
                         className="rounded-md border-gray-300 text-xs focus:border-blue-500 focus:ring-blue-500"
                       >
@@ -415,10 +417,7 @@ export default function AdminSupportPage() {
                       <select
                         value={ticket.status}
                         onChange={(e) =>
-                          handleStatusUpdate(
-                            ticket.id,
-                            e.target.value as TicketStatus,
-                          )
+                          handleStatusUpdate(String(ticket.id), e.target.value as TicketStatus)
                         }
                         className="rounded-md border-gray-300 text-xs focus:border-blue-500 focus:ring-blue-500"
                       >
@@ -527,8 +526,8 @@ export default function AdminSupportPage() {
                     Responses:
                   </h4>
                   <div className="max-h-64 space-y-3 overflow-y-auto">
-                    {detailModalState.ticket.responses.map(
-                      (response, index) => (
+                    {(detailModalState.ticket.responses as any[]).map(
+                      (response: any, index: number) => (
                         <div
                           key={index}
                           className="border-l-4 border-blue-500 pl-4"

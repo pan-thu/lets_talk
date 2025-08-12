@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "~/server/api/trpc";
+import { createTRPCRouter, createCallerFactory } from "~/server/api/trpc";
 import { authRouter } from "~/server/api/routers/auth";
 import { userRouter } from "~/server/api/routers/user";
 import { publicRouter } from "~/server/api/routers/public";
@@ -16,3 +16,6 @@ export const appRouter = createTRPCRouter({
 });
 
 export type AppRouter = typeof appRouter;
+
+// Export a caller factory for RSC hydration helpers
+export const createCaller = createCallerFactory(appRouter);

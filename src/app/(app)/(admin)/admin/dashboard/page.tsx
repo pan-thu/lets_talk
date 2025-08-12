@@ -148,12 +148,20 @@ export default function AdminDashboard() {
   }
 
   // Combine and sort recent activities
-  const allActivities = [
-    ...stats.recentActivity.enrollments,
-    ...stats.recentActivity.payments,
-    ...stats.recentActivity.tickets,
-    ...stats.recentActivity.courses,
-  ].sort(
+  // Adapt to current stats shape: recentPayments and recentTickets only
+  const payments = (stats as any).recentPayments?.map((p: any) => ({
+    id: p.id,
+    type: "payment",
+    description: `Payment ${p.provider ?? ""} - $${p.amount} for ${p.course?.title ?? "course"}`,
+    timestamp: p.createdAt,
+  })) ?? [];
+  const tickets = (stats as any).recentTickets?.map((t: any) => ({
+    id: t.id,
+    type: "ticket",
+    description: `Ticket: ${t.subject}`,
+    timestamp: t.createdAt,
+  })) ?? [];
+  const allActivities = [...payments, ...tickets].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 
@@ -191,27 +199,27 @@ export default function AdminDashboard() {
         <SectionTitle title="Platform Overview" />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Students"
-            value={stats.users.students}
-            subtitle={`${stats.users.total} total users`}
+            title="Total Users"
+            value={stats.totalUsers}
+            subtitle="All registered users"
             icon={Users}
           />
           <MetricCard
-            title="Active Courses"
-            value={stats.courses.published}
-            subtitle={`${stats.courses.draft} draft courses`}
+            title="Total Courses"
+            value={stats.totalCourses}
+            subtitle="All courses"
             icon={GraduationCap}
           />
           <MetricCard
-            title="Teachers"
-            value={stats.users.teachers}
-            subtitle="All active"
-            icon={UserCheck}
+            title="Total Tickets"
+            value={stats.totalTickets}
+            subtitle="Support tickets overall"
+            icon={MessageSquare}
           />
           <MetricCard
-            title="Pending Payments"
-            value={stats.payments.pending}
-            subtitle="Requires review"
+            title="Total Payments"
+            value={stats.totalPayments}
+            subtitle="All time"
             icon={DollarSign}
           />
         </div>
@@ -221,28 +229,30 @@ export default function AdminDashboard() {
       <div className="mb-8">
         <SectionTitle title="Performance Metrics" />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Placeholder: enrollments not in current API */}
           <MetricCard
             title="Total Enrollments"
-            value={stats.enrollments.total}
+            value={0}
             subtitle="Across all courses"
             icon={TrendingUp}
           />
+          {/* Placeholder: revenue breakdown not in current API */}
           <MetricCard
             title="Total Revenue"
-            value={`$${stats.payments.totalRevenue.toLocaleString()}`}
-            subtitle={`${stats.payments.completed} completed payments`}
+            value={0}
+            subtitle={`0 completed payments`}
             icon={DollarSign}
           />
           <MetricCard
             title="Support Tickets"
-            value={stats.tickets.total}
-            subtitle={`${stats.tickets.open} open, ${stats.tickets.inProgress} in progress`}
+            value={stats.totalTickets}
+            subtitle={`Latest ${((stats as any).recentTickets ?? []).length} tickets`}
             icon={MessageSquare}
           />
           <MetricCard
             title="Total Courses"
-            value={stats.courses.total}
-            subtitle={`${stats.courses.archived} archived`}
+            value={stats.totalCourses}
+            subtitle={`Latest ${((stats as any).recentPayments ?? []).length} payments`}
             icon={BookOpen}
           />
         </div>
@@ -347,9 +357,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">User Activity</h3>
-                <p className="text-sm text-green-600">
-                  {stats.users.students} active students
-                </p>
+                <p className="text-sm text-green-600">{stats.totalUsers} total users</p>
               </div>
             </div>
           </div>
@@ -360,30 +368,18 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Content Status</h3>
-                <p className="text-sm text-blue-600">
-                  {stats.courses.published} published courses
-                </p>
+                <p className="text-sm text-blue-600">{stats.totalCourses} total courses</p>
               </div>
             </div>
           </div>
           <div className="rounded-lg border bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div
-                className={`rounded-full p-2 ${stats.tickets.open > 0 ? "bg-yellow-100" : "bg-green-100"}`}
-              >
-                <MessageSquare
-                  className={`h-5 w-5 ${stats.tickets.open > 0 ? "text-yellow-600" : "text-green-600"}`}
-                />
+              <div className={`rounded-full p-2 ${stats.totalTickets > 0 ? "bg-yellow-100" : "bg-green-100"}`}>
+                <MessageSquare className={`h-5 w-5 ${stats.totalTickets > 0 ? "text-yellow-600" : "text-green-600"}`} />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Support Status</h3>
-                <p
-                  className={`text-sm ${stats.tickets.open > 0 ? "text-yellow-600" : "text-green-600"}`}
-                >
-                  {stats.tickets.open > 0
-                    ? `${stats.tickets.open} open tickets`
-                    : "All tickets resolved"}
-                </p>
+                <p className="text-sm text-blue-600">{stats.totalTickets} tickets total</p>
               </div>
             </div>
           </div>

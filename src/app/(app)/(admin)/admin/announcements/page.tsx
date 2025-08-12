@@ -106,10 +106,10 @@ export default function AdminAnnouncementsPage() {
   const handleCreateAnnouncement = () => {
     if (announcementForm.title && announcementForm.content) {
       createAnnouncementMutation.mutate({
-        ...announcementForm,
-        courseId: announcementForm.isGlobal
-          ? undefined
-          : announcementForm.courseId,
+        title: announcementForm.title,
+        content: announcementForm.content,
+        scope: announcementForm.isGlobal ? "GLOBAL" : "COURSE",
+        courseId: announcementForm.isGlobal ? undefined : announcementForm.courseId,
       });
     }
   };
@@ -121,20 +121,18 @@ export default function AdminAnnouncementsPage() {
       announcementForm.content
     ) {
       updateAnnouncementMutation.mutate({
-        announcementId: editModalState.announcement.id,
-        ...announcementForm,
-        courseId: announcementForm.isGlobal
-          ? undefined
-          : announcementForm.courseId,
+        id: editModalState.announcement.id,
+        title: announcementForm.title,
+        content: announcementForm.content,
+        scope: announcementForm.isGlobal ? "GLOBAL" : "COURSE",
+        courseId: announcementForm.isGlobal ? undefined : announcementForm.courseId,
       });
     }
   };
 
   const handleDeleteAnnouncement = () => {
     if (deleteModalState.announcement) {
-      deleteAnnouncementMutation.mutate({
-        announcementId: deleteModalState.announcement.id,
-      });
+      deleteAnnouncementMutation.mutate({ id: deleteModalState.announcement.id });
     }
   };
 
@@ -186,9 +184,11 @@ export default function AdminAnnouncementsPage() {
     );
   }
 
-  const { announcements, pagination } = announcementsData || {
-    announcements: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const announcements = announcementsData?.announcements ?? [];
+  const pagination = {
+    page: announcementsData?.currentPage ?? 1,
+    pages: announcementsData?.pages ?? 1,
+    total: announcementsData?.total ?? 0,
   };
 
   const stats = {

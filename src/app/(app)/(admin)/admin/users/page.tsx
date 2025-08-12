@@ -110,7 +110,7 @@ export default function AdminUsersPage() {
   const handleEditUser = () => {
     if (editUserModalState.user && editForm.name && editForm.email) {
       updateUserMutation.mutate({
-        userId: editUserModalState.user.id,
+        id: editUserModalState.user.id,
         ...editForm,
       });
     }
@@ -118,7 +118,7 @@ export default function AdminUsersPage() {
 
   const handleDeleteUser = () => {
     if (deleteUserModalState.user) {
-      deleteUserMutation.mutate({ userId: deleteUserModalState.user.id });
+      deleteUserMutation.mutate({ id: deleteUserModalState.user.id });
     }
   };
 
@@ -177,9 +177,11 @@ export default function AdminUsersPage() {
     );
   }
 
-  const { users, pagination } = usersData || {
-    users: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const users = usersData?.users ?? [];
+  const pagination = {
+    page: usersData?.currentPage ?? 1,
+    pages: usersData?.pages ?? 1,
+    total: usersData?.total ?? 0,
   };
 
   const stats = {

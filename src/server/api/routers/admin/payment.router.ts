@@ -15,16 +15,16 @@ export const paymentRouter = createTRPCRouter({
 
       const [payments, total] = await Promise.all([
         ctx.db.payment.findMany({
-          where: { status: PaymentStatus.PENDING },
+          where: { status: PaymentStatus.AWAITING_PAYMENT_PROOF },
           skip,
           take: limit,
           include: {
-            student: { select: { name: true, email: true } },
+            user: { select: { name: true, email: true } },
             course: { select: { title: true } },
           },
           orderBy: { createdAt: "desc" },
         }),
-        ctx.db.payment.count({ where: { status: PaymentStatus.PENDING } }),
+        ctx.db.payment.count({ where: { status: PaymentStatus.AWAITING_PAYMENT_PROOF } }),
       ]);
 
       return {
@@ -36,20 +36,20 @@ export const paymentRouter = createTRPCRouter({
     }),
 
   approvePayment: adminProcedure
-    .input(z.object({ paymentId: z.string() }))
+    .input(z.object({ paymentId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const payment = await ctx.db.payment.update({
         where: { id: input.paymentId },
-        data: { status: PaymentStatus.APPROVED },
-        include: { student: true, course: true },
+        data: { status: PaymentStatus.COMPLETED },
+        include: { user: true, course: true },
       });
       
       // Create enrollment
       await ctx.db.enrollment.create({
         data: {
-          studentId: payment.studentId,
+          studentId: payment.userId,
           courseId: payment.courseId,
-          status: "ACTIVE",
+          status: EnrollmentStatus.ACTIVE,
         },
       });
       
@@ -58,7 +58,7 @@ export const paymentRouter = createTRPCRouter({
 
   rejectPayment: adminProcedure
     .input(z.object({ 
-      paymentId: z.string(),
+      paymentId: z.number(),
       reason: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -66,7 +66,7 @@ export const paymentRouter = createTRPCRouter({
         where: { id: input.paymentId },
         data: { 
           status: PaymentStatus.REJECTED,
-          notes: input.reason,
+          adminNotes: input.reason ?? undefined,
         },
       });
     }),

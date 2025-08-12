@@ -34,7 +34,6 @@ export default function AdminPaymentsPage() {
   } = api.admin.payment.listPendingPayments.useQuery({
     page: currentPage,
     limit: 12,
-    search: searchTerm || undefined,
   });
 
   const utils = api.useUtils();
@@ -62,7 +61,7 @@ export default function AdminPaymentsPage() {
     },
   });
 
-  const handleApprove = async (paymentId: string) => {
+  const handleApprove = async (paymentId: number) => {
     if (window.confirm("Are you sure you want to approve this payment?")) {
       try {
         await approvePaymentMutation.mutateAsync({ paymentId });
@@ -76,7 +75,7 @@ export default function AdminPaymentsPage() {
     if (rejectionModalState.payment && rejectionReason.trim()) {
       try {
         await rejectPaymentMutation.mutateAsync({
-          paymentId: rejectionModalState.payment.id,
+          paymentId: rejectionModalState.payment.id as number,
           reason: rejectionReason,
         });
       } catch (error) {
@@ -135,15 +134,17 @@ export default function AdminPaymentsPage() {
     );
   }
 
-  const { payments, pagination } = paymentsData || {
-    payments: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const payments = paymentsData?.payments ?? [];
+  const pagination = {
+    page: paymentsData?.currentPage ?? 1,
+    pages: paymentsData?.pages ?? 1,
+    total: paymentsData?.total ?? 0,
   };
 
   const stats = {
     total: pagination.total,
-    pending: payments.filter((p) => p.status === "PENDING").length,
-    approved: payments.filter((p) => p.status === "APPROVED").length,
+    pending: payments.filter((p) => p.status === "AWAITING_PAYMENT_PROOF").length,
+    approved: payments.filter((p) => p.status === "COMPLETED").length,
     rejected: payments.filter((p) => p.status === "REJECTED").length,
   };
 
@@ -252,10 +253,10 @@ export default function AdminPaymentsPage() {
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="mb-1 text-lg font-semibold text-gray-900">
-                    {payment.course?.title || "Unknown Course"}
+                     {(payment as any).course?.title || "Unknown Course"}
                   </h3>
                   <p className="mb-2 text-sm text-gray-600">
-                    Student: {payment.user?.name || "Unknown"}
+                     Student: {(payment as any).user?.name || "Unknown"}
                   </p>
                   <div className="mb-3 flex items-center space-x-4 text-sm text-gray-500">
                     <span>${payment.amount}</span>
@@ -278,14 +279,14 @@ export default function AdminPaymentsPage() {
               </div>
 
               {/* Payment proof */}
-              {payment.paymentProofUrl && (
+               {(payment as any).proofImageUrl && (
                 <div className="mb-4">
                   <p className="mb-2 text-sm font-medium text-gray-700">
                     Payment Proof:
                   </p>
                   <button
                     onClick={() =>
-                      window.open(payment.paymentProofUrl, "_blank")
+                       window.open((payment as any).proofImageUrl, "_blank")
                     }
                     className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                   >
@@ -296,10 +297,10 @@ export default function AdminPaymentsPage() {
               )}
 
               {/* Actions */}
-              {payment.status === "PENDING" && (
+               {payment.status === "AWAITING_PAYMENT_PROOF" && (
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleApprove(payment.id)}
+                     onClick={() => handleApprove(payment.id as number)}
                     disabled={approvePaymentMutation.isPending}
                     className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                   >
@@ -322,13 +323,13 @@ export default function AdminPaymentsPage() {
               )}
 
               {/* Rejection reason */}
-              {payment.status === "REJECTED" && payment.rejectionReason && (
+               {payment.status === "REJECTED" && (payment as any).adminNotes && (
                 <div className="mt-4 rounded-md bg-red-50 p-3">
                   <p className="text-sm font-medium text-red-800">
                     Rejection Reason:
                   </p>
                   <p className="text-sm text-red-700">
-                    {payment.rejectionReason}
+                     {(payment as any).adminNotes}
                   </p>
                 </div>
               )}

@@ -9,7 +9,7 @@ export function SignUpForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [name, setName] = useState(""); // Uncomment if collecting name
+  const [name, setName] = useState("");
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -53,9 +53,9 @@ export function SignUpForm() {
 
     // Call the tRPC mutation
     registerMutation.mutate({
+      name,
       email,
       password,
-      // name, // Add name if collecting it
     });
   }
 
@@ -72,11 +72,10 @@ export function SignUpForm() {
       )}
       {/* Sign Up Form */}
       <form onSubmit={handleSignUp} className="space-y-4">
-        {/* Optional Name Input
         <div>
           <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
           <input id="name" name="name" type="text" required value={name} onChange={(e) => setName(e.target.value)} className="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500 sm:text-sm" />
-        </div> */}
+        </div>
         {/* Email Input */}
         <div>
           <label

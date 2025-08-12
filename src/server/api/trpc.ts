@@ -2,6 +2,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { type Session } from "next-auth";
+import { ZodError } from "zod";
 
 import { getServerAuthSession } from "~/server/auth";
 import { db } from "~/server/db";
@@ -71,8 +72,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof Error ? error.cause.message : null,
+        // Provide flattened Zod error object with fieldErrors for client handling
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -152,3 +153,6 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
     },
   });
 });
+
+// Export a caller factory used to build server-side callers (e.g., for RSC)
+export const createCallerFactory = t.createCallerFactory;

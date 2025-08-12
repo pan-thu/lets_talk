@@ -34,7 +34,15 @@ export default function AdminCoursesPage() {
     course: any | null;
   }>({ isOpen: false, course: null });
 
-  const [courseForm, setCourseForm] = useState({
+  const [courseForm, setCourseForm] = useState<{
+    title: string;
+    description: string;
+    price: number;
+    type: CourseType;
+    status: CourseStatus;
+    coverImageUrl: string;
+    teacherId: string;
+  }>({
     title: "",
     description: "",
     price: 0,
@@ -89,9 +97,11 @@ export default function AdminCoursesPage() {
   const handleCreateCourse = () => {
     if (courseForm.title && courseForm.type) {
       createCourseMutation.mutate({
-        ...courseForm,
-        teacherId: courseForm.teacherId || undefined,
-        coverImageUrl: courseForm.coverImageUrl || undefined,
+        title: courseForm.title,
+        description: courseForm.description,
+        price: courseForm.price,
+        type: courseForm.type,
+        teacherId: courseForm.teacherId,
       });
     }
   };
@@ -99,10 +109,13 @@ export default function AdminCoursesPage() {
   const handleUpdateCourse = () => {
     if (editModalState.course && courseForm.title) {
       updateCourseMutation.mutate({
-        courseId: editModalState.course.id,
-        ...courseForm,
-        teacherId: courseForm.teacherId || null,
-        coverImageUrl: courseForm.coverImageUrl || undefined,
+        id: editModalState.course.id,
+        title: courseForm.title,
+        description: courseForm.description,
+        price: courseForm.price,
+        type: courseForm.type,
+        status: courseForm.status,
+        teacherId: courseForm.teacherId || undefined,
       });
     }
   };
@@ -156,9 +169,11 @@ export default function AdminCoursesPage() {
     );
   }
 
-  const { courses, pagination } = coursesData || {
-    courses: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const courses = coursesData?.courses ?? [];
+  const pagination = {
+    page: coursesData?.currentPage ?? 1,
+    pages: coursesData?.pages ?? 1,
+    total: coursesData?.total ?? 0,
   };
 
   return (
@@ -350,33 +365,33 @@ export default function AdminCoursesPage() {
                     step="0.01"
                     className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   />
-                  <select
-                    value={courseForm.type}
+          <select
+            value={String(courseForm.type)}
                     onChange={(e) =>
                       setCourseForm({
                         ...courseForm,
-                        type: e.target.value as CourseType,
+                type: (e.target.value === "LIVE" ? CourseType.LIVE : CourseType.VIDEO),
                       })
                     }
                     className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   >
-                    <option value={CourseType.VIDEO}>Video Course</option>
-                    <option value={CourseType.LIVE}>Live Course</option>
+            <option value="VIDEO">Video Course</option>
+            <option value="LIVE">Live Course</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <select
-                    value={courseForm.status}
+          <select
+            value={String(courseForm.status)}
                     onChange={(e) =>
                       setCourseForm({
                         ...courseForm,
-                        status: e.target.value as CourseStatus,
+                status: (e.target.value === "PUBLISHED" ? CourseStatus.PUBLISHED : CourseStatus.DRAFT),
                       })
                     }
                     className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   >
-                    <option value={CourseStatus.DRAFT}>Draft</option>
-                    <option value={CourseStatus.PUBLISHED}>Published</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
                   </select>
                   <select
                     value={courseForm.teacherId}

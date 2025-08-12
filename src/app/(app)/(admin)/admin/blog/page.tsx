@@ -3,19 +3,7 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
-import {
-  FileText,
-  Plus,
-  Edit3,
-  Trash2,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Eye,
-} from "lucide-react";
+import { FileText, Plus, Edit3, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
@@ -35,12 +23,18 @@ export default function AdminBlogPage() {
   }>({ isOpen: false, post: null });
 
   // Form states
-  const [blogPostForm, setBlogPostForm] = useState({
+  const [blogPostForm, setBlogPostForm] = useState<{
+    title: string;
+    content: string;
+    summary: string;
+    tags: string;
+    status: "DRAFT" | "PUBLISHED";
+  }>({
     title: "",
     content: "",
     summary: "",
     tags: "",
-    status: PostStatus.DRAFT,
+    status: "DRAFT",
   });
 
   // Queries and mutations
@@ -103,11 +97,14 @@ export default function AdminBlogPage() {
   const handleCreateBlogPost = () => {
     if (blogPostForm.title && blogPostForm.content) {
       createBlogPostMutation.mutate({
-        ...blogPostForm,
+        title: blogPostForm.title,
+        content: blogPostForm.content,
+        excerpt: blogPostForm.summary || undefined,
         tags: blogPostForm.tags
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
+        status: blogPostForm.status as PostStatus,
       });
     }
   };
@@ -115,21 +112,22 @@ export default function AdminBlogPage() {
   const handleUpdateBlogPost = () => {
     if (editModalState.post && blogPostForm.title && blogPostForm.content) {
       updateBlogPostMutation.mutate({
-        blogPostId: editModalState.post.id,
-        ...blogPostForm,
+        id: editModalState.post.id,
+        title: blogPostForm.title,
+        content: blogPostForm.content,
+        excerpt: blogPostForm.summary || undefined,
         tags: blogPostForm.tags
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
+        status: blogPostForm.status as PostStatus,
       });
     }
   };
 
   const handleDeleteBlogPost = () => {
     if (deleteModalState.post) {
-      deleteBlogPostMutation.mutate({
-        blogPostId: deleteModalState.post.id,
-      });
+      deleteBlogPostMutation.mutate({ id: deleteModalState.post.id });
     }
   };
 
@@ -149,9 +147,8 @@ export default function AdminBlogPage() {
       case PostStatus.PUBLISHED:
         return "bg-green-100 text-green-800";
       case PostStatus.DRAFT:
+      default:
         return "bg-yellow-100 text-yellow-800";
-      case PostStatus.ARCHIVED:
-        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -160,9 +157,8 @@ export default function AdminBlogPage() {
       case PostStatus.PUBLISHED:
         return <CheckCircle className="h-4 w-4" />;
       case PostStatus.DRAFT:
+      default:
         return <Clock className="h-4 w-4" />;
-      case PostStatus.ARCHIVED:
-        return <XCircle className="h-4 w-4" />;
     }
   };
 
@@ -190,17 +186,17 @@ export default function AdminBlogPage() {
     );
   }
 
-  const { blogPosts, pagination } = blogPostsData || {
-    blogPosts: [],
-    pagination: { page: 1, pages: 1, total: 0 },
+  const blogPosts = blogPostsData?.posts ?? [];
+  const pagination = {
+    page: blogPostsData?.currentPage ?? 1,
+    pages: blogPostsData?.pages ?? 1,
+    total: blogPostsData?.total ?? 0,
   };
 
   const stats = {
     total: pagination.total,
-    published: blogPosts.filter((p) => p.status === PostStatus.PUBLISHED)
-      .length,
+    published: blogPosts.filter((p) => p.status === PostStatus.PUBLISHED).length,
     draft: blogPosts.filter((p) => p.status === PostStatus.DRAFT).length,
-    archived: blogPosts.filter((p) => p.status === PostStatus.ARCHIVED).length,
   };
 
   return (
@@ -260,17 +256,7 @@ export default function AdminBlogPage() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <XCircle className="h-8 w-8 text-gray-600" />
-            <div>
-              <p className="text-sm font-medium text-gray-600">Archived</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats.archived}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Archived status removed (not present in enum) */}
       </div>
 
       {/* Search */}
@@ -315,9 +301,9 @@ export default function AdminBlogPage() {
                   <h3 className="mb-2 text-lg font-semibold text-gray-900">
                     {post.title}
                   </h3>
-                  {post.summary && (
+                   {post.excerpt && (
                     <p className="mb-3 line-clamp-3 text-sm text-gray-600">
-                      {post.summary}
+                       {post.excerpt}
                     </p>
                   )}
                   <div className="mb-3 flex items-center gap-2">
@@ -341,9 +327,9 @@ export default function AdminBlogPage() {
                       </>
                     )}
                   </div>
-                  {Array.isArray(post.tags) && post.tags.length > 0 && (
+                  {Array.isArray((post as any).tags) && (post as any).tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {post.tags.slice(0, 3).map((tag, index) => (
+                      {(post as any).tags.slice(0, 3).map((tag: string, index: number) => (
                         <span
                           key={index}
                           className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
@@ -351,9 +337,9 @@ export default function AdminBlogPage() {
                           {tag}
                         </span>
                       ))}
-                      {post.tags.length > 3 && (
+                      {(post as any).tags.length > 3 && (
                         <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-                          +{post.tags.length - 3} more
+                          +{(post as any).tags.length - 3} more
                         </span>
                       )}
                     </div>
@@ -436,7 +422,7 @@ export default function AdminBlogPage() {
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
           <textarea
-            placeholder="Summary (optional)"
+            placeholder="Excerpt (optional)"
             value={blogPostForm.summary}
             onChange={(e) =>
               setBlogPostForm({
@@ -476,14 +462,14 @@ export default function AdminBlogPage() {
             onChange={(e) =>
               setBlogPostForm({
                 ...blogPostForm,
-                status: e.target.value as PostStatus,
+                status: (e.target.value === "PUBLISHED" ? "PUBLISHED" : "DRAFT"),
               })
             }
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
-            <option value={PostStatus.DRAFT}>Draft</option>
-            <option value={PostStatus.PUBLISHED}>Published</option>
-            <option value={PostStatus.ARCHIVED}>Archived</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            {/* Archived option removed (not present in enum) */}
           </select>
           <div className="flex justify-end gap-2 pt-2">
             <button
@@ -572,14 +558,14 @@ export default function AdminBlogPage() {
             onChange={(e) =>
               setBlogPostForm({
                 ...blogPostForm,
-                status: e.target.value as PostStatus,
+                status: (e.target.value === "PUBLISHED" ? "PUBLISHED" : "DRAFT"),
               })
             }
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
-            <option value={PostStatus.DRAFT}>Draft</option>
-            <option value={PostStatus.PUBLISHED}>Published</option>
-            <option value={PostStatus.ARCHIVED}>Archived</option>
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+            {/* Archived removed */}
           </select>
           <div className="flex justify-end gap-2 pt-2">
             <button
