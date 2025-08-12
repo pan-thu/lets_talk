@@ -1,3 +1,4 @@
+// src/server/auth.ts
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import {
   getServerSession,
@@ -5,6 +6,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { type Role } from "@prisma/client";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -20,12 +22,16 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      role: string;
+      role: Role;
     } & DefaultSession["user"];
   }
 
   interface User {
-    role: string;
+    role: Role;
+  }
+
+  interface JWT {
+    role: Role;
   }
 }
 
@@ -36,14 +42,20 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
+    session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
-        id: user.id,
-        role: user.role,
+        id: token.sub,
+        role: token.role,
       },
     }),
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
   },
   adapter: PrismaAdapter(db),
   providers: [
@@ -87,6 +99,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
   },
+  secret: env.AUTH_SECRET,
 };
 
 /**
@@ -95,5 +108,3 @@ export const authOptions: NextAuthOptions = {
  * @see https://next-auth.js.org/configuration/nextjs
  */
 export const getServerAuthSession = () => getServerSession(authOptions);
-
-export const auth = () => getServerSession(authOptions);

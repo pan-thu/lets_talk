@@ -1,9 +1,9 @@
+// src/app/layout.tsx
 import "~/styles/globals.css";
-
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-
-import { TRPCReactProvider } from "~/trpc/react";
+import Providers from "~/_components/Providers";
+import { getServerAuthSession } from "~/server/auth";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -18,15 +18,16 @@ const geist = Geist({
   preload: true,
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerAuthSession();
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );

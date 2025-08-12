@@ -1,9 +1,10 @@
+// src/app/auth/signin/page.tsx
 import { redirect } from "next/navigation";
-import { auth } from "~/server/auth";
-import { SignInForm } from "~/components/features/auth/SignInForm";
+import { getServerAuthSession } from "~/server/auth";
+import { SignInForm } from "~/_components/auth/SignInForm";
 
 export default async function SignInPage() {
-  const session = await auth();
+  const session = await getServerAuthSession();
   
   if (session?.user) {
     redirect("/dashboard");

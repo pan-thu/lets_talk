@@ -19,18 +19,17 @@ const config = {
       },
     ],
   },
-  experimental: {
-    turbo: {
-      resolveExtensions: [
-        ".mdx",
-        ".tsx",
-        ".ts",
-        ".jsx",
-        ".js",
-        ".mjs",
-        ".json",
-      ],
-    },
+  // Replaced deprecated `experimental.turbo` with stable `turbopack`
+  turbopack: {
+    resolveExtensions: [
+      ".mdx",
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".mjs",
+      ".json",
+    ],
   },
 };
 
