@@ -20,7 +20,7 @@ export const dashboardRouter = createTRPCRouter({
         ctx.db.payment.findMany({
           take: 5,
           include: {
-            student: { select: { name: true } },
+            user: { select: { name: true } },
             course: { select: { title: true } },
           },
           orderBy: { createdAt: "desc" },
@@ -28,7 +28,7 @@ export const dashboardRouter = createTRPCRouter({
         ctx.db.supportTicket.findMany({
           take: 5,
           include: {
-            student: { select: { name: true } },
+            submitter: { select: { name: true } },
           },
           orderBy: { createdAt: "desc" },
         }),

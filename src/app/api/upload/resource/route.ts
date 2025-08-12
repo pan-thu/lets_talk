@@ -3,6 +3,7 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { ResourceType } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,11 +14,10 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const courseId = formData.get("courseId") as string;
-    const resourceType = formData.get("resourceType") as string; // 'lesson' or 'exercise'
+    const courseId = Number(formData.get("courseId"));
 
-    if (!file || !courseId || !resourceType) {
-      return NextResponse.json({ error: "File, course ID, and resource type required" }, { status: 400 });
+    if (!file || Number.isNaN(courseId)) {
+      return NextResponse.json({ error: "File and valid course ID required" }, { status: 400 });
     }
 
     // Validate file types
@@ -52,7 +52,15 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const timestamp = Date.now();
     const extension = file.name.split(".").pop();
-    const filename = `resource-${courseId}-${resourceType}-${timestamp}.${extension}`;
+    // Derive resource type from the uploaded file's MIME type
+    let mappedType: ResourceType = ResourceType.FILE;
+    if (file.type.startsWith("video/")) mappedType = ResourceType.VIDEO;
+    else if (file.type.startsWith("audio/")) mappedType = ResourceType.AUDIO_EXERCISE;
+    else if (file.type === "application/pdf") mappedType = ResourceType.PDF;
+    else if (file.type === "text/plain") mappedType = ResourceType.TEXT;
+    else mappedType = ResourceType.FILE;
+
+    const filename = `resource-${courseId}-${mappedType.toLowerCase()}-${timestamp}.${extension}`;
 
     // Ensure uploads directory exists
     const uploadsDir = join(process.cwd(), "public", "uploads");
@@ -69,7 +77,7 @@ export async function POST(request: NextRequest) {
     const resource = await db.resource.create({
       data: {
         title: file.name,
-        type: resourceType as "lesson" | "exercise",
+        type: mappedType,
         url: resourceUrl,
         courseId: courseId,
       },

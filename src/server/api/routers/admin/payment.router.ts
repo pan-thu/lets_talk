@@ -47,7 +47,7 @@ export const paymentRouter = createTRPCRouter({
       // Create enrollment
       await ctx.db.enrollment.create({
         data: {
-          studentId: payment.userId,
+          userId: payment.userId,
           courseId: payment.courseId,
           status: EnrollmentStatus.ACTIVE,
         },

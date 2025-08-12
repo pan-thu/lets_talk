@@ -559,8 +559,8 @@ export default function TeacherCourseManagementPage({
             {/* Student Progress */}
             <StudentProgressSection courseId={courseId} />
 
-            {/* Student Submissions */}
-            <SubmissionsSection courseId={courseId} />
+            {/* Student Submissions (coming soon) */}
+            {/* <SubmissionsSection courseId={courseId} /> */}
           </>
         )}
       </div>

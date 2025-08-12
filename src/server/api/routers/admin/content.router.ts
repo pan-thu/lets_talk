@@ -17,8 +17,8 @@ export const contentRouter = createTRPCRouter({
         data: {
           title: input.title,
           content: input.content,
-          scope: input.scope,
-          courseId: input.courseId,
+          isGlobal: input.scope === "GLOBAL",
+          courseId: input.scope === "COURSE" && input.courseId ? Number(input.courseId) : null,
         },
       });
     }),
@@ -32,10 +32,19 @@ export const contentRouter = createTRPCRouter({
       courseId: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { id, courseId, ...rest } = input;
       return await ctx.db.announcement.update({
-        where: { id },
-        data,
+        where: { id: Number(id) },
+        data: {
+          title: rest.title,
+          content: rest.content,
+          ...(typeof rest.scope !== "undefined" && {
+            isGlobal: rest.scope === "GLOBAL",
+          }),
+          ...(typeof courseId !== "undefined" && {
+            courseId: courseId ? Number(courseId) : null,
+          }),
+        },
       });
     }),
 
@@ -43,7 +52,7 @@ export const contentRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.announcement.delete({
-        where: { id: input.id },
+        where: { id: Number(input.id) },
       });
     }),
 
@@ -99,12 +108,19 @@ export const contentRouter = createTRPCRouter({
       status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
     }))
     .mutation(async ({ ctx, input }) => {
+      const baseSlug = input.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+      const uniqueSlug = `${baseSlug}-${Date.now()}`;
+
       return await ctx.db.blogPost.create({
         data: {
           title: input.title,
+          slug: uniqueSlug,
           content: input.content,
           excerpt: input.excerpt,
-          tags: input.tags,
           status: input.status,
           authorId: ctx.session.user.id,
         },
@@ -121,10 +137,12 @@ export const contentRouter = createTRPCRouter({
       status: z.nativeEnum(PostStatus).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { id, tags, ...rest } = input;
       return await ctx.db.blogPost.update({
-        where: { id },
-        data,
+        where: { id: Number(id) },
+        data: {
+          ...rest,
+        },
       });
     }),
 
@@ -132,7 +150,7 @@ export const contentRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.blogPost.delete({
-        where: { id: input.id },
+        where: { id: Number(input.id) },
       });
     }),
 

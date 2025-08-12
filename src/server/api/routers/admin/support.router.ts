@@ -33,8 +33,8 @@ export const supportRouter = createTRPCRouter({
           skip,
           take: limit,
           include: {
-            student: { select: { name: true, email: true } },
-            assignedTo: { select: { name: true, email: true } },
+            submitter: { select: { name: true, email: true } },
+            assignee: { select: { name: true, email: true } },
           },
           orderBy: { createdAt: "desc" },
         }),
@@ -86,8 +86,8 @@ export const supportRouter = createTRPCRouter({
           skip,
           take: limit,
           include: {
-            student: { select: { name: true, email: true } },
-            assignedTo: { select: { name: true, email: true } },
+            submitter: { select: { name: true, email: true } },
+            assignee: { select: { name: true, email: true } },
           },
           orderBy: { createdAt: "desc" },
         }),
@@ -106,13 +106,13 @@ export const supportRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.supportTicket.findUnique({
-        where: { id: input.id },
+        where: { id: Number(input.id) },
         include: {
-          student: { select: { name: true, email: true } },
-          assignedTo: { select: { name: true, email: true } },
+          submitter: { select: { name: true, email: true } },
+          assignee: { select: { name: true, email: true } },
           responses: {
             include: {
-              user: { select: { name: true, role: true } },
+              author: { select: { name: true, role: true } },
             },
             orderBy: { createdAt: "asc" },
           },
@@ -127,7 +127,7 @@ export const supportRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.supportTicket.update({
-        where: { id: input.id },
+        where: { id: Number(input.id) },
         data: { status: input.status },
       });
     }),
@@ -139,8 +139,8 @@ export const supportRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.supportTicket.update({
-        where: { id: input.ticketId },
-        data: { assignedToId: input.assignedToId },
+        where: { id: Number(input.ticketId) },
+        data: { assigneeId: input.assignedToId },
       });
     }),
 
@@ -152,9 +152,9 @@ export const supportRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.ticketResponse.create({
         data: {
-          content: input.content,
-          ticketId: input.ticketId,
-          userId: ctx.session.user.id,
+          message: input.content,
+          ticketId: Number(input.ticketId),
+          authorId: ctx.session.user.id,
         },
       });
     }),

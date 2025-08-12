@@ -21,7 +21,7 @@ export const courseRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.course.update({
-        where: { id: input.courseId },
+        where: { id: Number(input.courseId) },
         data: { teacherId: input.teacherId },
       });
     }),
@@ -60,7 +60,7 @@ export const courseRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       return await ctx.db.course.update({
-        where: { id },
+        where: { id: Number(id) },
         data,
       });
     }),
