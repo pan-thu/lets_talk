@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { TeacherPromptDisplay } from "~/_components/shared/TeacherPromptDisplay";
+import { TeacherPromptDisplay } from "~/_components/features/shared/TeacherPromptDisplay";
 import { StudentAudioRecorder } from "~/_components/features/student/StudentAudioRecorder";
 import { api } from "~/trpc/react";
 

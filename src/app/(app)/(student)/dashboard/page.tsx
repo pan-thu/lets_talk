@@ -4,7 +4,7 @@ import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation"
 import { DashboardMetricCard } from "~/_components/features/student/DashboardMetricCard";
 import { TodayTaskList } from "~/_components/features/student/TodayTaskList";
 import { ContributionCalendar } from "~/_components/features/student/ContributionCalendar";
-import { RecentlyAccessedCourseCard } from "~/_components/shared/RecentlyAccessedCourseCard";
+import { RecentlyAccessedCourseCard } from "~/_components/features/shared/RecentlyAccessedCourseCard";
 import { api } from "~/trpc/react";
 
 function SectionTitle({ title }: { title: string }) {

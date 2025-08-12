@@ -2,10 +2,10 @@
 
 import { use } from "react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import VideoPlayerDisplay from "~/_components/shared/VideoPlayerDisplay";
-import LessonDescription from "~/_components/shared/LessonDescription";
-import LessonActionPanel from "~/_components/shared/LessonActionPanel";
-import CommentsSection from "~/_components/shared/CommentsSection";
+import VideoPlayerDisplay from "~/_components/features/shared/VideoPlayerDisplay";
+import LessonDescription from "~/_components/features/shared/LessonDescription";
+import LessonActionPanel from "~/_components/features/shared/LessonActionPanel";
+import CommentsSection from "~/_components/features/shared/CommentsSection";
 import { api } from "~/trpc/react";
 
 interface LessonDetailPageProps {

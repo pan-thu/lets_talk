@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { AnnouncementCard } from "~/_components/shared/AnnouncementCard";
+import { AnnouncementCard } from "~/_components/features/shared/AnnouncementCard";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 

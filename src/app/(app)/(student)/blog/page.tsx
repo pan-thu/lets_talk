@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { BlogPostCard } from "~/_components/shared/BlogPostCard";
-import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { BlogPostCard } from "~/_components/features/shared/BlogPostCard";
+import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 import { api } from "~/trpc/react";
 
 export default function StudentBlogPage() {

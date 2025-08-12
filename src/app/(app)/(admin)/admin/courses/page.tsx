@@ -430,10 +430,7 @@ export default function AdminCoursesPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </AdminModalWrapper>
+            </AdminModalWrapper>
 
       {/* TODO: Add edit modal functionality later */}
     </div>

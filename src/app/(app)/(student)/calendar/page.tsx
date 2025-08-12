@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { MonthNavigator } from "~/_components/shared/MonthNavigator";
-import { CalendarMonthGrid } from "~/_components/shared/CalendarMonthGrid";
-import { MobileEventList } from "~/_components/shared/MobileEventList";
+import { MonthNavigator } from "~/_components/features/shared/MonthNavigator";
+import { CalendarMonthGrid } from "~/_components/features/shared/CalendarMonthGrid";
+import { MobileEventList } from "~/_components/features/shared/MobileEventList";
 import { api } from "~/trpc/react";
 
 // Define the StaticEvent type to match the one in CalendarMonthGrid

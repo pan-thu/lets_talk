@@ -18,7 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminAnnouncementsPage() {
@@ -501,7 +501,6 @@ export default function AdminAnnouncementsPage() {
                 </div>
               </div>
         </AdminModalWrapper>
-      )}
 
       {/* Edit Announcement Modal */}
       <AdminModalWrapper
@@ -627,7 +626,6 @@ export default function AdminAnnouncementsPage() {
           </div>
         </div>
         </AdminModalWrapper>
-      )}
 
       {/* Delete Announcement Modal */}
       <AdminModalWrapper
@@ -665,7 +663,6 @@ export default function AdminAnnouncementsPage() {
           </div>
         </div>
         </AdminModalWrapper>
-      )}
     </div>
   );
 }

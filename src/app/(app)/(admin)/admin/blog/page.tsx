@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
-import { PaginationControls } from "~/_components/shared/PaginationControls";
+import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 export default function AdminBlogPage() {

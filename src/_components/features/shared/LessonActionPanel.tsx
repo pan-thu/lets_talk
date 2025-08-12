@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, AlertTriangle, X } from "lucide-react";
 import { api } from "~/trpc/react";
-import ConfirmationToast from "../ui/ConfirmationToast";
+import ConfirmationToast from "~/_components/ui/ConfirmationToast";
 
 interface LessonActionPanelProps {
   lessonId: number;

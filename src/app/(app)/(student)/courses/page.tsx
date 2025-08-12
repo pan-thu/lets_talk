@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { CourseCard } from "~/_components/shared/CourseCard";
+import { CourseCard } from "~/_components/features/shared/CourseCard";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";

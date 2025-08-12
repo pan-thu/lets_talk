@@ -1,4 +1,4 @@
-import { WeekItem } from "~/_components/shared/WeekItem";
+import { WeekItem } from "~/_components/features/shared/WeekItem";
 
 interface Lesson {
   id: number;
