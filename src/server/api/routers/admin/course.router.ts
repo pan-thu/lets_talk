@@ -1,70 +1,45 @@
+// src/server/api/routers/admin/course.router.ts
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { CourseStatus, CourseType } from "@prisma/client";
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
 
 export const courseRouter = createTRPCRouter({
-  getAllCourses: adminProcedure
-    .query(async ({ ctx }) => {
-      return await ctx.db.course.findMany({
-        include: {
-          teacher: { select: { name: true, email: true } },
-          _count: { select: { enrollments: true } },
-        },
-      });
-    }),
-
-  assignCourseToTeacher: adminProcedure
-    .input(z.object({
-      courseId: z.string(),
-      teacherId: z.string(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.course.update({
-        where: { id: input.courseId },
-        data: { teacherId: input.teacherId },
-      });
-    }),
-
   createCourse: adminProcedure
     .input(z.object({
       title: z.string().min(1),
-      description: z.string(),
-      price: z.number().positive(),
+      description: z.string().optional(),
+      price: z.number().min(0),
       type: z.nativeEnum(CourseType),
-      teacherId: z.string(),
+      status: z.nativeEnum(CourseStatus),
+      coverImageUrl: z.string().url().optional(),
+      teacherId: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.course.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          price: input.price,
-          type: input.type,
-          status: CourseStatus.DRAFT,
-          teacherId: input.teacherId,
-        },
+        data: input,
       });
     }),
 
   updateCourse: adminProcedure
     .input(z.object({
-      id: z.string(),
+      courseId: z.number(),
       title: z.string().min(1).optional(),
       description: z.string().optional(),
-      price: z.number().positive().optional(),
+      price: z.number().min(0).optional(),
       type: z.nativeEnum(CourseType).optional(),
       status: z.nativeEnum(CourseStatus).optional(),
-      teacherId: z.string().optional(),
+      coverImageUrl: z.string().url().optional(),
+      teacherId: z.string().nullable().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { courseId, ...data } = input;
       return await ctx.db.course.update({
-        where: { id },
+        where: { id: courseId },
         data,
       });
     }),
-
+  
   listAllCourses: adminProcedure
     .input(z.object({
       page: z.number().min(1).default(1),
@@ -80,8 +55,8 @@ export const courseRouter = createTRPCRouter({
       const where = {
         ...(search && {
           OR: [
-            { title: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
+            { title: { contains: search } },
+            { description: { contains: search } },
           ],
         }),
         ...(status && { status }),
@@ -94,7 +69,7 @@ export const courseRouter = createTRPCRouter({
           skip,
           take: limit,
           include: {
-            teacher: { select: { name: true, email: true } },
+            teacher: { select: { id: true, name: true } },
             _count: { select: { enrollments: true } },
           },
           orderBy: { createdAt: "desc" },
@@ -104,9 +79,11 @@ export const courseRouter = createTRPCRouter({
 
       return {
         courses,
-        total,
-        pages: Math.ceil(total / limit),
-        currentPage: page,
+        pagination: {
+          page,
+          pages: Math.ceil(total / limit),
+          total,
+        },
       };
     }),
 });

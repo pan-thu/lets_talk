@@ -260,18 +260,7 @@ export function Sidebar() {
                 <MessageCircle size={iconSize} />
                 {!isCollapsed && <span>Support Tickets</span>}
               </Link>
-              <Link
-                href="/admin/test"
-                className={`sidebar-item flex items-center gap-3 rounded ${
-                  pathname.startsWith("/admin/test") ? "active" : ""
-                } ${
-                  isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
-                title="Admin Tools"
-              >
-                <Shield size={iconSize} />
-                {!isCollapsed && <span>Admin Tools</span>}
-              </Link>
+
             </>
           )}
 

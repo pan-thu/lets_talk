@@ -1,3 +1,4 @@
+// src/_components/features/student/CourseContentAccordion.tsx
 import { WeekItem } from "~/_components/features/shared/WeekItem";
 
 interface Lesson {

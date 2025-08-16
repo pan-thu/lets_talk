@@ -9,27 +9,28 @@ export const contentRouter = createTRPCRouter({
     .input(z.object({
       title: z.string().min(1),
       content: z.string().min(1),
-      scope: z.enum(["GLOBAL", "COURSE"]),
-      courseId: z.string().optional(),
+      isGlobal: z.boolean().default(false),
+      courseId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.announcement.create({
         data: {
           title: input.title,
           content: input.content,
-          scope: input.scope,
+          isGlobal: input.isGlobal,
           courseId: input.courseId,
+          authorId: ctx.session.user.id,
         },
       });
     }),
 
   updateAnnouncement: adminProcedure
     .input(z.object({
-      id: z.string(),
+      id: z.number(),
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
-      scope: z.enum(["GLOBAL", "COURSE"]).optional(),
-      courseId: z.string().optional(),
+      isGlobal: z.boolean().optional(),
+      courseId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
@@ -40,7 +41,7 @@ export const contentRouter = createTRPCRouter({
     }),
 
   deleteAnnouncement: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.announcement.delete({
         where: { id: input.id },
@@ -95,16 +96,16 @@ export const contentRouter = createTRPCRouter({
       title: z.string().min(1),
       content: z.string().min(1),
       excerpt: z.string().optional(),
-      tags: z.array(z.string()).optional(),
       status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
     }))
     .mutation(async ({ ctx, input }) => {
+      const slug = input.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       return await ctx.db.blogPost.create({
         data: {
           title: input.title,
+          slug,
           content: input.content,
           excerpt: input.excerpt,
-          tags: input.tags,
           status: input.status,
           authorId: ctx.session.user.id,
         },
@@ -113,11 +114,10 @@ export const contentRouter = createTRPCRouter({
 
   updateBlogPost: adminProcedure
     .input(z.object({
-      id: z.string(),
+      id: z.number(),
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
       excerpt: z.string().optional(),
-      tags: z.array(z.string()).optional(),
       status: z.nativeEnum(PostStatus).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -129,7 +129,7 @@ export const contentRouter = createTRPCRouter({
     }),
 
   deleteBlogPost: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.blogPost.delete({
         where: { id: input.id },

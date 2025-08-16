@@ -560,7 +560,7 @@ export default function TeacherCourseManagementPage({
             <StudentProgressSection courseId={courseId} />
 
             {/* Student Submissions */}
-            <SubmissionsSection courseId={courseId} />
+            {/* TODO: Implement SubmissionsSection component */}
           </>
         )}
       </div>

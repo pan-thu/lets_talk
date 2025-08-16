@@ -101,6 +101,7 @@ export default function AdminCoursesPage() {
         description: courseForm.description,
         price: courseForm.price,
         type: courseForm.type,
+        status: courseForm.status,
         teacherId: courseForm.teacherId,
       });
     }
@@ -109,7 +110,7 @@ export default function AdminCoursesPage() {
   const handleUpdateCourse = () => {
     if (editModalState.course && courseForm.title) {
       updateCourseMutation.mutate({
-        id: editModalState.course.id,
+        courseId: editModalState.course.id,
         title: courseForm.title,
         description: courseForm.description,
         price: courseForm.price,
@@ -171,9 +172,9 @@ export default function AdminCoursesPage() {
 
   const courses = coursesData?.courses ?? [];
   const pagination = {
-    page: coursesData?.currentPage ?? 1,
-    pages: coursesData?.pages ?? 1,
-    total: coursesData?.total ?? 0,
+    page: coursesData?.pagination?.page ?? 1,
+    pages: coursesData?.pagination?.pages ?? 1,
+    total: coursesData?.pagination?.total ?? 0,
   };
 
   return (

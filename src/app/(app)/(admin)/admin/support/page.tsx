@@ -91,11 +91,11 @@ export default function AdminSupportPage() {
 
   // Handlers
   const handleStatusUpdate = (ticketId: string, status: TicketStatus) => {
-    updateTicketStatusMutation.mutate({ id: ticketId, status });
+    updateTicketStatusMutation.mutate({ id: parseInt(ticketId), status });
   };
 
   const handleAssignTicket = (ticketId: string, adminId: string) => {
-    assignTicketMutation.mutate({ ticketId, assignedToId: adminId });
+    assignTicketMutation.mutate({ ticketId: parseInt(ticketId), assignedToId: adminId });
   };
 
   const handleAddResponse = () => {

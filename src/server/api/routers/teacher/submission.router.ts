@@ -123,6 +123,13 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
+      if (!submission.resource) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Submission has no associated resource.",
+        });
+      }
+
       if (submission.resource.course.teacherId !== teacherId) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -206,6 +213,13 @@ export const submissionRouter = createTRPCRouter({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Submission not found.",
+        });
+      }
+
+      if (!submission.resource) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Submission has no associated resource.",
         });
       }
 

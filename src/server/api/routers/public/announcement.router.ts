@@ -5,7 +5,7 @@ export const announcementRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       const announcements = await ctx.db.announcement.findMany({
         where: {
-          scope: "GLOBAL",
+          isGlobal: true,
         },
         orderBy: {
           createdAt: "desc",

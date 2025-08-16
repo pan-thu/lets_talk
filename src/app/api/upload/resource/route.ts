@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Verify course ownership
     const course = await db.course.findFirst({
       where: {
-        id: courseId,
+        id: parseInt(courseId),
         teacherId: session.user.id,
       },
     });
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
     const resource = await db.resource.create({
       data: {
         title: file.name,
-        type: resourceType as "lesson" | "exercise",
+        type: resourceType.toUpperCase() as "VIDEO" | "PDF" | "LINK" | "TEXT" | "FILE" | "AUDIO_EXERCISE",
         url: resourceUrl,
-        courseId: courseId,
+        courseId: parseInt(courseId),
       },
     });
 

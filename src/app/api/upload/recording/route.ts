@@ -30,14 +30,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify session ownership
-    const liveSession = await db.liveSession.findFirst({
+    const courseSession = await db.courseSession.findFirst({
       where: {
-        id: sessionId,
-        teacherId: session.user.id,
+        id: parseInt(sessionId),
+        course: {
+          teacherId: session.user.id,
+        },
+      },
+      include: {
+        course: true,
       },
     });
 
-    if (!liveSession) {
+    if (!courseSession) {
       return NextResponse.json({ error: "Session not found or access denied" }, { status: 404 });
     }
 
@@ -57,8 +62,8 @@ export async function POST(request: NextRequest) {
 
     // Update session with recording URL
     const recordingUrl = `/uploads/${filename}`;
-    await db.liveSession.update({
-      where: { id: sessionId },
+    await db.courseSession.update({
+      where: { id: parseInt(sessionId) },
       data: { recordingUrl },
     });
 

@@ -136,9 +136,9 @@ export default function AdminPaymentsPage() {
 
   const payments = paymentsData?.payments ?? [];
   const pagination = {
-    page: paymentsData?.currentPage ?? 1,
-    pages: paymentsData?.pages ?? 1,
-    total: paymentsData?.total ?? 0,
+    page: paymentsData?.pagination?.page ?? 1,
+    pages: paymentsData?.pagination?.pages ?? 1,
+    total: paymentsData?.pagination?.total ?? 0,
   };
 
   const stats = {

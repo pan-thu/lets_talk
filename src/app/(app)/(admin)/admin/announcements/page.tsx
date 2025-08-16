@@ -108,8 +108,8 @@ export default function AdminAnnouncementsPage() {
       createAnnouncementMutation.mutate({
         title: announcementForm.title,
         content: announcementForm.content,
-        scope: announcementForm.isGlobal ? "GLOBAL" : "COURSE",
-        courseId: announcementForm.isGlobal ? undefined : announcementForm.courseId,
+        isGlobal: announcementForm.isGlobal,
+        courseId: announcementForm.isGlobal ? undefined : parseInt(announcementForm.courseId),
       });
     }
   };
@@ -124,8 +124,8 @@ export default function AdminAnnouncementsPage() {
         id: editModalState.announcement.id,
         title: announcementForm.title,
         content: announcementForm.content,
-        scope: announcementForm.isGlobal ? "GLOBAL" : "COURSE",
-        courseId: announcementForm.isGlobal ? undefined : announcementForm.courseId,
+        isGlobal: announcementForm.isGlobal,
+        courseId: announcementForm.isGlobal ? undefined : parseInt(announcementForm.courseId),
       });
     }
   };
