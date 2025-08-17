@@ -18,6 +18,7 @@ import {
 import { CourseStatus, CourseType } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
+import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 
 export default function AdminCoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,6 +31,10 @@ export default function AdminCoursesPage() {
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editModalState, setEditModalState] = useState<{
+    isOpen: boolean;
+    course: any | null;
+  }>({ isOpen: false, course: null });
+  const [archiveModalState, setArchiveModalState] = useState<{
     isOpen: boolean;
     course: any | null;
   }>({ isOpen: false, course: null });
@@ -94,6 +99,15 @@ export default function AdminCoursesPage() {
     onError: (error) => alert(`Error updating course: ${error.message}`),
   });
 
+  const archiveCourseMutation = api.admin.course.archiveCourse.useMutation({
+    onSuccess: () => {
+      utils.admin.course.listAllCourses.invalidate();
+      setArchiveModalState({ isOpen: false, course: null });
+      alert("Course archived successfully!");
+    },
+    onError: (error) => alert(`Error archiving course: ${error.message}`),
+  });
+
   const handleCreateCourse = () => {
     if (courseForm.title && courseForm.type) {
       createCourseMutation.mutate({
@@ -118,6 +132,12 @@ export default function AdminCoursesPage() {
         status: courseForm.status,
         teacherId: courseForm.teacherId || undefined,
       });
+    }
+  };
+
+  const handleArchiveCourse = () => {
+    if (archiveModalState.course) {
+      archiveCourseMutation.mutate({ courseId: archiveModalState.course.id });
     }
   };
 
@@ -310,7 +330,10 @@ export default function AdminCoursesPage() {
                   View
                 </button>
                 {course.status !== CourseStatus.ARCHIVED && (
-                  <button className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200">
+                  <button 
+                    onClick={() => setArchiveModalState({ isOpen: true, course })}
+                    className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200"
+                  >
                     <Archive className="h-3 w-3" />
                     Archive
                   </button>
@@ -321,7 +344,28 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
-      {/* Pagination Controls Here */}
+      {pagination.pages > 1 && (
+         <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+           <div>
+             <p className="text-sm text-gray-700">
+               Showing{" "}
+               <span className="font-medium">
+                 {(currentPage - 1) * 6 + 1}
+               </span>{" "}
+               to{" "}
+               <span className="font-medium">
+                 {Math.min(currentPage * 6, pagination.total)}
+               </span>{" "}
+               of <span className="font-medium">{pagination.total}</span> results
+             </p>
+           </div>
+           <PaginationControls
+             currentPage={currentPage}
+             totalPages={pagination.pages}
+             onPageChange={setCurrentPage}
+           />
+         </div>
+       )}
 
       {/* Working Create Course Modal */}
       <AdminModalWrapper
@@ -448,7 +492,59 @@ export default function AdminCoursesPage() {
               </div>
             </AdminModalWrapper>
 
-      {/* TODO: Add edit modal functionality later */}
+      <AdminModalWrapper
+        isOpen={editModalState.isOpen}
+        onClose={() => setEditModalState({ isOpen: false, course: null })}
+        title="Edit Course"
+      >
+        <div className="space-y-4">
+           {/* Form fields are pre-populated via openEditModal */}
+           <input type="text" placeholder="Course Title" value={courseForm.title} onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })} className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+           <textarea placeholder="Course Description" value={courseForm.description} onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })} rows={3} className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+           <div className="grid grid-cols-2 gap-3">
+             <input type="number" placeholder="Price" value={courseForm.price} onChange={(e) => setCourseForm({ ...courseForm, price: Number(e.target.value) })} min="0" step="0.01" className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+             <select value={courseForm.type} onChange={(e) => setCourseForm({ ...courseForm, type: e.target.value as CourseType })} className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+               <option value={CourseType.VIDEO}>Video Course</option>
+               <option value={CourseType.LIVE}>Live Course</option>
+             </select>
+           </div>
+           <div className="grid grid-cols-2 gap-3">
+             <select value={courseForm.status} onChange={(e) => setCourseForm({ ...courseForm, status: e.target.value as CourseStatus })} className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+               <option value={CourseStatus.DRAFT}>Draft</option>
+               <option value={CourseStatus.PUBLISHED}>Published</option>
+               <option value={CourseStatus.ARCHIVED}>Archived</option>
+             </select>
+             <select value={courseForm.teacherId} onChange={(e) => setCourseForm({ ...courseForm, teacherId: e.target.value })} className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+               <option value="">Select Teacher</option>
+               {teachers?.map((teacher) => (<option key={teacher.id} value={teacher.id}>{teacher.name}</option>))}
+             </select>
+           </div>
+           <div className="flex justify-end gap-2 pt-4">
+             <button type="button" onClick={() => setEditModalState({ isOpen: false, course: null })} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+             <button type="button" onClick={handleUpdateCourse} disabled={!courseForm.title || updateCourseMutation.isPending} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+               {updateCourseMutation.isPending ? "Updating..." : "Update Course"}
+             </button>
+           </div>
+         </div>
+       </AdminModalWrapper>
+
+      <AdminModalWrapper
+        isOpen={archiveModalState.isOpen}
+        onClose={() => setArchiveModalState({ isOpen: false, course: null })}
+        title="Archive Course"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to archive the course "<strong>{archiveModalState.course?.title}</strong>"? Students will no longer be able to enroll.
+          </p>
+          <div className="flex justify-end gap-2 pt-4">
+            <button type="button" onClick={() => setArchiveModalState({ isOpen: false, course: null })} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+            <button type="button" onClick={handleArchiveCourse} disabled={archiveCourseMutation.isPending} className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
+              {archiveCourseMutation.isPending ? "Archiving..." : "Archive Course"}
+            </button>
+          </div>
+        </div>
+      </AdminModalWrapper>
     </div>
   );
 }

@@ -18,41 +18,68 @@ export const resourceRouter = createTRPCRouter({
         type: z.nativeEnum(ResourceType),
         url: z.string().optional(),
         content: z.string().optional(),
-        week: z.number().int().positive().optional(),
-        order: z.number().int().min(0).optional(),
+        week: z.number().int().positive(), // Week is now required and validated
         releaseDate: z.date().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { courseId, ...resourceData } = input;
+      const { courseId, week, ...resourceData } = input;
       const teacherId = ctx.session.user.id;
 
-      // Verify teacher owns the course
+      // 1. Verify teacher owns the course
       const course = await ctx.db.course.findUnique({
         where: { id: courseId },
-        select: { teacherId: true, title: true },
+        select: { teacherId: true },
       });
 
-      if (!course) {
+      if (!course || course.teacherId !== teacherId) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Course not found.",
+          code: "FORBIDDEN",
+          message: "You do not have permission to add resources to this course.",
         });
       }
 
-      if (course.teacherId !== teacherId) {
+      // 2. Validate the week number
+      const latestResource = await ctx.db.resource.findFirst({
+        where: { courseId },
+        orderBy: { week: "desc" },
+        select: { week: true },
+      });
+
+      const highestWeek = latestResource?.week ?? 0;
+
+      // A new resource can be added to the current highest week, or the next one.
+      // If no resources exist (highestWeek is 0), it must be week 1.
+      if (highestWeek === 0) {
+        if (week !== 1) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The first week of a course must be Week 1.",
+          });
+        }
+      } else if (week < highestWeek || week > highestWeek + 1) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have permission to add resources to this course.",
+          code: "BAD_REQUEST",
+          message: `You can only add resources to the latest week (${highestWeek}) or the next week (${highestWeek + 1}).`,
         });
       }
+
+      // 3. Automatically determine the order
+      const latestResourceInWeek = await ctx.db.resource.findFirst({
+        where: { courseId, week },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+
+      const newOrder = (latestResourceInWeek?.order ?? -1) + 1;
 
       try {
         const resource = await ctx.db.resource.create({
           data: {
             ...resourceData,
             courseId,
+            week,
+            order: newOrder,
             url: resourceData.url || "",
           },
         });
@@ -81,7 +108,7 @@ export const resourceRouter = createTRPCRouter({
         url: z.string().optional(),
         content: z.string().optional(),
         week: z.number().int().positive().optional(),
-        order: z.number().int().min(0).optional(),
+        order: z.number().int().min(0).optional(), // Keep for now, but might not be used
         releaseDate: z.date().optional(),
       }),
     )
@@ -111,6 +138,11 @@ export const resourceRouter = createTRPCRouter({
           code: "FORBIDDEN",
           message: "You do not have permission to edit this resource.",
         });
+      }
+
+      // We won't allow changing week/order for now to keep it simple
+      if (updateData.week || updateData.order) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Changing week or order is not supported in this update." });
       }
 
       try {
@@ -149,7 +181,7 @@ export const resourceRouter = createTRPCRouter({
         where: { id: resourceId },
         include: {
           course: {
-            select: { teacherId: true, title: true },
+            select: { teacherId: true },
           },
         },
       });
@@ -183,6 +215,28 @@ export const resourceRouter = createTRPCRouter({
         await ctx.db.resource.delete({
           where: { id: resourceId },
         });
+
+        // After deletion, we might need to re-order the remaining resources in the same week.
+        const remainingResources = await ctx.db.resource.findMany({
+            where: {
+                courseId: resource.courseId,
+                week: resource.week,
+            },
+            orderBy: {
+                order: 'asc'
+            }
+        });
+
+        // Start a transaction to update the order of remaining resources
+        const updates = remainingResources.map((res, index) => {
+            return ctx.db.resource.update({
+                where: { id: res.id },
+                data: { order: index }
+            });
+        });
+
+        await ctx.db.$transaction(updates);
+
 
         return {
           success: true,

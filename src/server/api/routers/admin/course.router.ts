@@ -39,6 +39,23 @@ export const courseRouter = createTRPCRouter({
         data,
       });
     }),
+
+  archiveCourse: adminProcedure
+    .input(z.object({ courseId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const course = await ctx.db.course.findUnique({
+        where: { id: input.courseId },
+      });
+
+      if (!course) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Course not found.' });
+      }
+
+      return await ctx.db.course.update({
+        where: { id: input.courseId },
+        data: { status: CourseStatus.ARCHIVED },
+      });
+    }),
   
   listAllCourses: adminProcedure
     .input(z.object({

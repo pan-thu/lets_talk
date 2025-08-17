@@ -37,7 +37,7 @@ export function AdminModalWrapper({ isOpen, onClose, title, children }: AdminMod
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/10 p-4 backdrop-blur-md"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
