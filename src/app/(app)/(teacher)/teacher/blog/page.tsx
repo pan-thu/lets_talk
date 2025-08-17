@@ -65,7 +65,7 @@ export default function TeacherBlogPage() {
         <div className="mt-6 flex justify-center">
           <PaginationControls
             currentPage={data.currentPage}
-            totalPages={Math.max(1, data.pages)}
+            totalPages={Math.max(1, data.pages)} // Ensure at least 1 page
             onPageChange={handlePageChange}
           />
         </div>

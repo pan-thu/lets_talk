@@ -29,17 +29,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File size must be less than 100MB" }, { status: 400 });
     }
 
-    // Verify session ownership via the course relation
-    const sessionRecord = await db.courseSession.findFirst({
+    // Verify session ownership
+    const courseSession = await db.courseSession.findFirst({
       where: {
-        id: Number(sessionId),
+        id: parseInt(sessionId),
         course: {
           teacherId: session.user.id,
         },
       },
+      include: {
+        course: true,
+      },
     });
 
-    if (!sessionRecord) {
+    if (!courseSession) {
       return NextResponse.json({ error: "Session not found or access denied" }, { status: 404 });
     }
 
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Update session with recording URL
     const recordingUrl = `/uploads/${filename}`;
     await db.courseSession.update({
-      where: { id: Number(sessionId) },
+      where: { id: parseInt(sessionId) },
       data: { recordingUrl },
     });
 

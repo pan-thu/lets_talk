@@ -200,25 +200,25 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Users"
-            value={stats.totalUsers}
+            value={stats.users.total}
             subtitle="All registered users"
             icon={Users}
           />
           <MetricCard
             title="Total Courses"
-            value={stats.totalCourses}
+            value={stats.courses.total}
             subtitle="All courses"
             icon={GraduationCap}
           />
           <MetricCard
             title="Total Tickets"
-            value={stats.totalTickets}
+            value={stats.tickets.total}
             subtitle="Support tickets overall"
             icon={MessageSquare}
           />
           <MetricCard
             title="Total Payments"
-            value={stats.totalPayments}
+            value={stats.payments.completed}
             subtitle="All time"
             icon={DollarSign}
           />
@@ -245,13 +245,13 @@ export default function AdminDashboard() {
           />
           <MetricCard
             title="Support Tickets"
-            value={stats.totalTickets}
+            value={stats.tickets.total}
             subtitle={`Latest ${((stats as any).recentTickets ?? []).length} tickets`}
             icon={MessageSquare}
           />
           <MetricCard
             title="Total Courses"
-            value={stats.totalCourses}
+            value={stats.courses.total}
             subtitle={`Latest ${((stats as any).recentPayments ?? []).length} payments`}
             icon={BookOpen}
           />
@@ -357,7 +357,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">User Activity</h3>
-                <p className="text-sm text-green-600">{stats.totalUsers} total users</p>
+                <p className="text-sm text-green-600">{stats.users.total} total users</p>
               </div>
             </div>
           </div>
@@ -368,18 +368,18 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Content Status</h3>
-                <p className="text-sm text-blue-600">{stats.totalCourses} total courses</p>
+                <p className="text-sm text-blue-600">{stats.courses.total} total courses</p>
               </div>
             </div>
           </div>
           <div className="rounded-lg border bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className={`rounded-full p-2 ${stats.totalTickets > 0 ? "bg-yellow-100" : "bg-green-100"}`}>
-                <MessageSquare className={`h-5 w-5 ${stats.totalTickets > 0 ? "text-yellow-600" : "text-green-600"}`} />
+              <div className={`rounded-full p-2 ${stats.tickets.total > 0 ? "bg-yellow-100" : "bg-green-100"}`}>
+                <MessageSquare className={`h-5 w-5 ${stats.tickets.total > 0 ? "text-yellow-600" : "text-green-600"}`} />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Support Status</h3>
-                <p className="text-sm text-blue-600">{stats.totalTickets} tickets total</p>
+                <p className="text-sm text-blue-600">{stats.tickets.total} tickets total</p>
               </div>
             </div>
           </div>

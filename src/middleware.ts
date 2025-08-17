@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
   if (matchedPath) {
     const allowedRoles = routePermissions[matchedPath];
-    if (!allowedRoles || !allowedRoles.includes(userRole)) {
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
       // User is not authorized, redirect to their role's specific dashboard
       const roleDashboard =
         {

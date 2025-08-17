@@ -123,7 +123,14 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
-      if (!submission.resource || submission.resource.course.teacherId !== teacherId) {
+      if (!submission.resource) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Submission has no associated resource.",
+        });
+      }
+
+      if (submission.resource.course.teacherId !== teacherId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have permission to grade this submission.",
@@ -209,7 +216,14 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
-      if (!submission.resource || submission.resource.course.teacherId !== teacherId) {
+      if (!submission.resource) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Submission has no associated resource.",
+        });
+      }
+
+      if (submission.resource.course.teacherId !== teacherId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have permission to view this submission.",

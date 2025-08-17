@@ -103,7 +103,7 @@ export const supportRouter = createTRPCRouter({
     }),
 
   getTicketDetails: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.supportTicket.findUnique({
         where: { id: Number(input.id) },
@@ -122,7 +122,7 @@ export const supportRouter = createTRPCRouter({
 
   updateTicketStatus: adminProcedure
     .input(z.object({
-      id: z.string(),
+      id: z.number(),
       status: z.nativeEnum(TicketStatus),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -134,26 +134,26 @@ export const supportRouter = createTRPCRouter({
 
   assignTicket: adminProcedure
     .input(z.object({
-      ticketId: z.string(),
+      ticketId: z.number(),
       assignedToId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.supportTicket.update({
-        where: { id: Number(input.ticketId) },
+        where: { id: input.ticketId },
         data: { assigneeId: input.assignedToId },
       });
     }),
 
   addTicketResponse: adminProcedure
     .input(z.object({
-      ticketId: z.string(),
+      ticketId: z.number(),
       content: z.string().min(1),
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.ticketResponse.create({
         data: {
           message: input.content,
-          ticketId: Number(input.ticketId),
+          ticketId: input.ticketId,
           authorId: ctx.session.user.id,
         },
       });

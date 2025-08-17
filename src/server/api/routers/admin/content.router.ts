@@ -9,47 +9,39 @@ export const contentRouter = createTRPCRouter({
     .input(z.object({
       title: z.string().min(1),
       content: z.string().min(1),
-      scope: z.enum(["GLOBAL", "COURSE"]),
-      courseId: z.string().optional(),
+      isGlobal: z.boolean().default(false),
+      courseId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.announcement.create({
         data: {
           title: input.title,
           content: input.content,
-          isGlobal: input.scope === "GLOBAL",
-          courseId: input.scope === "COURSE" && input.courseId ? Number(input.courseId) : null,
+          isGlobal: input.isGlobal,
+          courseId: input.courseId,
+          authorId: ctx.session.user.id,
         },
       });
     }),
 
   updateAnnouncement: adminProcedure
     .input(z.object({
-      id: z.string(),
+      id: z.number(),
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
-      scope: z.enum(["GLOBAL", "COURSE"]).optional(),
-      courseId: z.string().optional(),
+      isGlobal: z.boolean().optional(),
+      courseId: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { id, courseId, ...rest } = input;
+      const { id, ...rest } = input;
       return await ctx.db.announcement.update({
         where: { id: Number(id) },
-        data: {
-          title: rest.title,
-          content: rest.content,
-          ...(typeof rest.scope !== "undefined" && {
-            isGlobal: rest.scope === "GLOBAL",
-          }),
-          ...(typeof courseId !== "undefined" && {
-            courseId: courseId ? Number(courseId) : null,
-          }),
-        },
+        data: rest,
       });
     }),
 
   deleteAnnouncement: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.announcement.delete({
         where: { id: Number(input.id) },
@@ -74,7 +66,7 @@ export const contentRouter = createTRPCRouter({
             { content: { contains: search, mode: "insensitive" } },
           ],
         }),
-        ...(scope && { scope }),
+        ...(scope && { isGlobal: scope === "GLOBAL" }),
       };
 
       const [announcements, total] = await Promise.all([
@@ -104,21 +96,15 @@ export const contentRouter = createTRPCRouter({
       title: z.string().min(1),
       content: z.string().min(1),
       excerpt: z.string().optional(),
-      tags: z.array(z.string()).optional(),
       status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
     }))
     .mutation(async ({ ctx, input }) => {
-      const baseSlug = input.title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-      const uniqueSlug = `${baseSlug}-${Date.now()}`;
-
+<<<<<<< HEAD
+      const slug = input.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       return await ctx.db.blogPost.create({
         data: {
           title: input.title,
-          slug: uniqueSlug,
+          slug,
           content: input.content,
           excerpt: input.excerpt,
           status: input.status,
@@ -129,15 +115,14 @@ export const contentRouter = createTRPCRouter({
 
   updateBlogPost: adminProcedure
     .input(z.object({
-      id: z.string(),
+      id: z.number(),
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
       excerpt: z.string().optional(),
-      tags: z.array(z.string()).optional(),
       status: z.nativeEnum(PostStatus).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { id, tags, ...rest } = input;
+      const { id, ...rest } = input;
       return await ctx.db.blogPost.update({
         where: { id: Number(id) },
         data: {
@@ -147,7 +132,7 @@ export const contentRouter = createTRPCRouter({
     }),
 
   deleteBlogPost: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.blogPost.delete({
         where: { id: Number(input.id) },
