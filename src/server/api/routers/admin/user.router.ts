@@ -66,6 +66,27 @@ export const userRouter = createTRPCRouter({
             role: true,
             createdAt: true,
             image: true,
+            // Include enrollments for students
+            enrollments: {
+              select: {
+                id: true,
+                status: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+            // Include courses for teachers
+            taughtCourses: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+              },
+            },
           },
           orderBy: { createdAt: "desc" },
         }),

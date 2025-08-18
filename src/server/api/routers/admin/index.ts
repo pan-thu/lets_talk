@@ -3,7 +3,6 @@ import { paymentRouter } from "./payment.router";
 import { userRouter } from "./user.router";
 import { courseRouter } from "./course.router";
 import { contentRouter } from "./content.router";
-import { supportRouter } from "./support.router";
 import { dashboardRouter } from "./dashboard.router";
 
 export const adminRouter = createTRPCRouter({
@@ -11,6 +10,5 @@ export const adminRouter = createTRPCRouter({
   user: userRouter,
   course: courseRouter,
   content: contentRouter,
-  support: supportRouter,
   dashboard: dashboardRouter,
 });

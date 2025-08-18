@@ -150,24 +150,13 @@ export function Sidebar() {
                   pathname.startsWith("/courses") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="Course"
               >
                 <GraduationCap size={iconSize} />
                 {!isCollapsed && <span>Course</span>}
               </Link>
-              <Link
-                href="/support"
-                className={`sidebar-item flex items-center gap-3 rounded ${
-                  pathname.startsWith("/support") ? "active" : ""
-                } ${
-                  isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
-                title="Support"
-              >
-                <MessageCircle size={iconSize} />
-                {!isCollapsed && <span>Support</span>}
-              </Link>
+
             </>
           )}
 
@@ -178,7 +167,7 @@ export function Sidebar() {
                 pathname.startsWith("/teacher/courses") ? "active" : ""
               } ${
                 isCollapsed ? "justify-center py-3" : "px-3 py-2"
-              } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+              } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
               title="My Courses"
             >
               <GraduationCap size={iconSize} />
@@ -194,7 +183,7 @@ export function Sidebar() {
                   pathname.startsWith("/admin/courses") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="Course Management"
               >
                 <GraduationCap size={iconSize} />
@@ -206,7 +195,7 @@ export function Sidebar() {
                   pathname.startsWith("/admin/payments") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="Payment Review"
               >
                 <DollarSign size={iconSize} />
@@ -218,7 +207,7 @@ export function Sidebar() {
                   pathname.startsWith("/admin/users") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="User Management"
               >
                 <UserCog size={iconSize} />
@@ -230,7 +219,7 @@ export function Sidebar() {
                   pathname.startsWith("/admin/announcements") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="Content - Announcements"
               >
                 <Megaphone size={iconSize} />
@@ -242,24 +231,13 @@ export function Sidebar() {
                   pathname.startsWith("/admin/blog") ? "active" : ""
                 } ${
                   isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+                } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
                 title="Content - Blog"
               >
                 <FileText size={iconSize} />
                 {!isCollapsed && <span>Blog Posts</span>}
               </Link>
-              <Link
-                href="/admin/support"
-                className={`sidebar-item flex items-center gap-3 rounded ${
-                  pathname.startsWith("/admin/support") ? "active" : ""
-                } ${
-                  isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
-                title="Support Tickets"
-              >
-                <MessageCircle size={iconSize} />
-                {!isCollapsed && <span>Support Tickets</span>}
-              </Link>
+
 
             </>
           )}
@@ -298,7 +276,7 @@ export function Sidebar() {
                 pathname.startsWith(blogHref) ? "active" : ""
               } ${
                 isCollapsed ? "justify-center py-3" : "px-3 py-2"
-              } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
+              } text-sm transition-all duration-200 ease-out hover:translate-x-1`}
               title="Blog"
             >
               <BookOpen size={iconSize} />

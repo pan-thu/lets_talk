@@ -7,7 +7,6 @@ import {
   Users,
   GraduationCap,
   DollarSign,
-  MessageSquare,
   BookOpen,
   UserCheck,
   AlertTriangle,
@@ -148,20 +147,14 @@ export default function AdminDashboard() {
   }
 
   // Combine and sort recent activities
-  // Adapt to current stats shape: recentPayments and recentTickets only
+  // Adapt to current stats shape: recentPayments only
   const payments = (stats as any).recentPayments?.map((p: any) => ({
     id: p.id,
     type: "payment",
     description: `Payment ${p.provider ?? ""} - $${p.amount} for ${p.course?.title ?? "course"}`,
     timestamp: p.createdAt,
   })) ?? [];
-  const tickets = (stats as any).recentTickets?.map((t: any) => ({
-    id: t.id,
-    type: "ticket",
-    description: `Ticket: ${t.subject}`,
-    timestamp: t.createdAt,
-  })) ?? [];
-  const allActivities = [...payments, ...tickets].sort(
+  const allActivities = [...payments].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 
@@ -171,8 +164,6 @@ export default function AdminDashboard() {
         return <UserCheck className="h-4 w-4 text-green-600" />;
       case "payment":
         return <DollarSign className="h-4 w-4 text-blue-600" />;
-      case "ticket":
-        return <MessageSquare className="h-4 w-4 text-yellow-600" />;
       case "course":
         return <BookOpen className="h-4 w-4 text-purple-600" />;
       default:
@@ -210,12 +201,7 @@ export default function AdminDashboard() {
             subtitle="All courses"
             icon={GraduationCap}
           />
-          <MetricCard
-            title="Total Tickets"
-            value={stats.tickets.total}
-            subtitle="Support tickets overall"
-            icon={MessageSquare}
-          />
+
           <MetricCard
             title="Total Payments"
             value={stats.payments.completed}
@@ -243,12 +229,7 @@ export default function AdminDashboard() {
             subtitle={`0 completed payments`}
             icon={DollarSign}
           />
-          <MetricCard
-            title="Support Tickets"
-            value={stats.tickets.total}
-            subtitle={`Latest ${((stats as any).recentTickets ?? []).length} tickets`}
-            icon={MessageSquare}
-          />
+
           <MetricCard
             title="Total Courses"
             value={stats.courses.total}
@@ -283,13 +264,7 @@ export default function AdminDashboard() {
             href="/admin/courses"
             icon={GraduationCap}
           />
-          <QuickActionCard
-            title="Support Tickets"
-            description="View and respond to user support requests"
-            action="View Tickets"
-            href="/admin/support"
-            icon={MessageSquare}
-          />
+
           <QuickActionCard
             title="Content Management"
             description="Manage announcements and blog posts"
@@ -372,17 +347,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-          <div className="rounded-lg border bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={`rounded-full p-2 ${stats.tickets.total > 0 ? "bg-yellow-100" : "bg-green-100"}`}>
-                <MessageSquare className={`h-5 w-5 ${stats.tickets.total > 0 ? "text-yellow-600" : "text-green-600"}`} />
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Support Status</h3>
-                <p className="text-sm text-blue-600">{stats.tickets.total} tickets total</p>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

@@ -11,7 +11,6 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Eye,
   FileText,
 } from "lucide-react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
@@ -31,17 +30,21 @@ export default function AdminPaymentsPage() {
     data: paymentsData,
     isLoading,
     error,
-  } = api.admin.payment.listPendingPayments.useQuery({
+  } = api.admin.payment.listAllPayments.useQuery({
     page: currentPage,
     limit: 12,
+    search: searchTerm || undefined,
   });
+
+  const { data: statsData } = api.admin.payment.getPaymentStats.useQuery();
 
   const utils = api.useUtils();
 
   const approvePaymentMutation =
     api.admin.payment.approvePayment.useMutation({
       onSuccess: () => {
-        utils.admin.payment.listPendingPayments.invalidate();
+        utils.admin.payment.listAllPayments.invalidate();
+        utils.admin.payment.getPaymentStats.invalidate();
         alert("Payment approved successfully!");
       },
       onError: (error) => {
@@ -51,7 +54,8 @@ export default function AdminPaymentsPage() {
 
   const rejectPaymentMutation = api.admin.payment.rejectPayment.useMutation({
     onSuccess: () => {
-      utils.admin.payment.listPendingPayments.invalidate();
+      utils.admin.payment.listAllPayments.invalidate();
+      utils.admin.payment.getPaymentStats.invalidate();
       setRejectionModalState({ isOpen: false, payment: null });
       setRejectionReason("");
       alert("Payment rejected successfully!");
@@ -86,12 +90,14 @@ export default function AdminPaymentsPage() {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "APPROVED":
+      case "COMPLETED":
         return "bg-green-100 text-green-800";
       case "REJECTED":
         return "bg-red-100 text-red-800";
-      case "PENDING":
+      case "PROOF_SUBMITTED":
         return "bg-yellow-100 text-yellow-800";
+      case "AWAITING_PAYMENT_PROOF":
+        return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -99,11 +105,13 @@ export default function AdminPaymentsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "APPROVED":
+      case "COMPLETED":
         return <CheckCircle className="h-4 w-4" />;
       case "REJECTED":
         return <XCircle className="h-4 w-4" />;
-      case "PENDING":
+      case "PROOF_SUBMITTED":
+        return <Clock className="h-4 w-4" />;
+      case "AWAITING_PAYMENT_PROOF":
         return <Clock className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
@@ -142,10 +150,10 @@ export default function AdminPaymentsPage() {
   };
 
   const stats = {
-    total: pagination.total,
-    pending: payments.filter((p) => p.status === "AWAITING_PAYMENT_PROOF").length,
-    approved: payments.filter((p) => p.status === "COMPLETED").length,
-    rejected: payments.filter((p) => p.status === "REJECTED").length,
+    total: statsData?.total ?? 0,
+    pending: statsData?.pending ?? 0,
+    approved: statsData?.approved ?? 0,
+    rejected: statsData?.rejected ?? 0,
   };
 
   return (
@@ -230,7 +238,7 @@ export default function AdminPaymentsPage() {
         </div>
       </div>
 
-      {/* Payments Grid */}
+      {/* Payments Table */}
       {payments.length === 0 ? (
         <div className="py-12 text-center">
           <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
@@ -244,97 +252,119 @@ export default function AdminPaymentsPage() {
           </p>
         </div>
       ) : (
-        <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          {payments.map((payment) => (
-            <div
-              key={payment.id}
-              className="rounded-lg border bg-white p-6 shadow-sm"
-            >
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="mb-1 text-lg font-semibold text-gray-900">
-                     {(payment as any).course?.title || "Unknown Course"}
-                  </h3>
-                  <p className="mb-2 text-sm text-gray-600">
-                     Student: {(payment as any).user?.name || "Unknown"}
-                  </p>
-                  <div className="mb-3 flex items-center space-x-4 text-sm text-gray-500">
-                    <span>${payment.amount}</span>
-                    <span>•</span>
-                    <span>
-                      {format(new Date(payment.createdAt), "MMM d, yyyy")}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
-                        payment.status,
-                      )}`}
-                    >
-                      {getStatusIcon(payment.status)}
-                      {payment.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment proof */}
-               {(payment as any).proofImageUrl && (
-                <div className="mb-4">
-                  <p className="mb-2 text-sm font-medium text-gray-700">
-                    Payment Proof:
-                  </p>
-                  <button
-                    onClick={() =>
-                       window.open((payment as any).proofImageUrl, "_blank")
-                    }
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View Receipt
-                  </button>
-                </div>
-              )}
-
-              {/* Actions */}
-               {payment.status === "AWAITING_PAYMENT_PROOF" && (
-                <div className="flex space-x-2">
-                  <button
-                     onClick={() => handleApprove(payment.id as number)}
-                    disabled={approvePaymentMutation.isPending}
-                    className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                    {approvePaymentMutation.isPending
-                      ? "Approving..."
-                      : "Approve"}
-                  </button>
-                  <button
-                    onClick={() =>
-                      setRejectionModalState({ isOpen: true, payment })
-                    }
-                    disabled={rejectPaymentMutation.isPending}
-                    className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-700 disabled:opacity-50"
-                  >
-                    <XCircle className="h-3 w-3" />
-                    Reject
-                  </button>
-                </div>
-              )}
-
-              {/* Rejection reason */}
-               {payment.status === "REJECTED" && (payment as any).adminNotes && (
-                <div className="mt-4 rounded-md bg-red-50 p-3">
-                  <p className="text-sm font-medium text-red-800">
-                    Rejection Reason:
-                  </p>
-                  <p className="text-sm text-red-700">
-                     {(payment as any).adminNotes}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="mb-8 overflow-hidden rounded-lg border bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Course
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Student
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+                             <tbody className="divide-y divide-gray-200 bg-white">
+                 {payments.map((payment) => (
+                   <tr 
+                     key={payment.id} 
+                     className={`hover:bg-gray-50 ${
+                       payment.status === "COMPLETED" || payment.status === "REJECTED" 
+                         ? "opacity-60" 
+                         : ""
+                     }`}
+                   >
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {(payment as any).course?.title || "Unknown Course"}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {(payment as any).user?.name || "Unknown"}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {(payment as any).user?.email || ""}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        ${payment.amount}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {format(new Date(payment.createdAt), "MMM d, yyyy")}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {format(new Date(payment.createdAt), "h:mm a")}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
+                          payment.status,
+                        )}`}
+                      >
+                        {getStatusIcon(payment.status)}
+                        {payment.status.replace("_", " ")}
+                      </span>
+                    </td>
+                                         <td className="whitespace-nowrap px-6 py-4">
+                       {payment.status === "PROOF_SUBMITTED" ? (
+                         <div className="flex space-x-2">
+                           <button
+                             onClick={() => handleApprove(payment.id as number)}
+                             disabled={approvePaymentMutation.isPending}
+                             className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                           >
+                             <CheckCircle className="h-3 w-3" />
+                             {approvePaymentMutation.isPending
+                               ? "Approving..."
+                               : "Approve"}
+                           </button>
+                           <button
+                             onClick={() =>
+                               setRejectionModalState({ isOpen: true, payment })
+                             }
+                             disabled={rejectPaymentMutation.isPending}
+                             className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                           >
+                             <XCircle className="h-3 w-3" />
+                             Reject
+                           </button>
+                         </div>
+                       ) : payment.status === "REJECTED" && (payment as any).adminNotes ? (
+                         <div className="text-sm text-red-600">
+                           <div className="font-medium">Rejected</div>
+                           <div className="text-xs text-red-500 truncate max-w-32">
+                             {(payment as any).adminNotes}
+                           </div>
+                         </div>
+                       ) : (
+                         <span className="text-sm text-gray-500">
+                           {payment.status === "COMPLETED" ? "Approved" : "No action needed"}
+                         </span>
+                       )}
+                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

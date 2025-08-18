@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
-import { FileText, Plus, Edit3, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { FileText, Plus, Edit3, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock } from "lucide-react";
 import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
+import { ImageUpload } from "~/_components/ui/ImageUpload";
 
 export default function AdminBlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,13 +28,13 @@ export default function AdminBlogPage() {
     title: string;
     content: string;
     summary: string;
-    tags: string;
+    imageUrl: string;
     status: "DRAFT" | "PUBLISHED";
   }>({
     title: "",
     content: "",
     summary: "",
-    tags: "",
+    imageUrl: "",
     status: "DRAFT",
   });
 
@@ -59,7 +60,7 @@ export default function AdminBlogPage() {
           title: "",
           content: "",
           summary: "",
-          tags: "",
+          imageUrl: "",
           status: PostStatus.DRAFT,
         });
         alert("Blog post created successfully!");
@@ -100,10 +101,7 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
-        tags: blogPostForm.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        imageUrl: blogPostForm.imageUrl || undefined,
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -116,10 +114,7 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
-        tags: blogPostForm.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        imageUrl: blogPostForm.imageUrl || undefined,
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -136,7 +131,7 @@ export default function AdminBlogPage() {
       title: post.title,
       content: post.content,
       summary: post.summary || "",
-      tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
+      imageUrl: post.imageUrl || "",
       status: post.status,
     });
     setEditModalState({ isOpen: true, post });
@@ -216,7 +211,15 @@ export default function AdminBlogPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              setBlogPostForm({
+                title: "",
+                content: "",
+                summary: "",
+                status: "DRAFT",
+              });
+              setIsCreateModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" />
@@ -362,15 +365,7 @@ export default function AdminBlogPage() {
                   <Trash2 className="h-3 w-3" />
                   Delete
                 </button>
-                {post.slug && (
-                  <button
-                    onClick={() => window.open(`/blog/${post.slug}`, "_blank")}
-                    className="inline-flex items-center gap-1 rounded bg-gray-200 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-300"
-                  >
-                    <Eye className="h-3 w-3" />
-                    View
-                  </button>
-                )}
+
               </div>
             </div>
           ))}
@@ -433,6 +428,21 @@ export default function AdminBlogPage() {
             rows={2}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image
+            </label>
+            <ImageUpload
+              uploadType="blog-image"
+              currentImageUrl={blogPostForm.imageUrl || undefined}
+              onImageUploaded={(imageUrl) =>
+                setBlogPostForm({
+                  ...blogPostForm,
+                  imageUrl: imageUrl,
+                })
+              }
+            />
+          </div>
           <textarea
             placeholder="Blog Post Content"
             value={blogPostForm.content}
@@ -445,18 +455,7 @@ export default function AdminBlogPage() {
             rows={6}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          <input
-            type="text"
-            placeholder="Tags (comma-separated)"
-            value={blogPostForm.tags}
-            onChange={(e) =>
-              setBlogPostForm({
-                ...blogPostForm,
-                tags: e.target.value,
-              })
-            }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+
           <select
             value={blogPostForm.status}
             onChange={(e) =>
@@ -529,6 +528,21 @@ export default function AdminBlogPage() {
             rows={2}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image
+            </label>
+            <ImageUpload
+              uploadType="blog-image"
+              currentImageUrl={blogPostForm.imageUrl || undefined}
+              onImageUploaded={(imageUrl) =>
+                setBlogPostForm({
+                  ...blogPostForm,
+                  imageUrl: imageUrl,
+                })
+              }
+            />
+          </div>
           <textarea
             placeholder="Blog Post Content"
             value={blogPostForm.content}
@@ -541,18 +555,7 @@ export default function AdminBlogPage() {
             rows={6}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          <input
-            type="text"
-            placeholder="Tags (comma-separated)"
-            value={blogPostForm.tags}
-            onChange={(e) =>
-              setBlogPostForm({
-                ...blogPostForm,
-                tags: e.target.value,
-              })
-            }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+
           <select
             value={blogPostForm.status}
             onChange={(e) =>

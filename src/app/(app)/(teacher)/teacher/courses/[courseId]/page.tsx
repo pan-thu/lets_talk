@@ -54,7 +54,7 @@ function TeacherResourceItem({ resource, onEdit, onDelete }: { resource: any; on
 
 // Week accordion item
 function TeacherWeekItem({ weekNumber, resources, onAddResource, onEditResource, onDeleteResource, isLastWeek }: { weekNumber: number; resources: any[]; onAddResource: (week: number) => void; onEditResource: (resource: any) => void; onDeleteResource: (resource: any) => void; isLastWeek: boolean; }) {
-  const [isExpanded, setIsExpanded] = useState(isLastWeek ? false : true);
+  const [isExpanded, setIsExpanded] = useState(isLastWeek ? true : false);
 
   return (
     <div className="rounded-lg border bg-white shadow-sm">

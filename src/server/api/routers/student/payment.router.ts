@@ -14,7 +14,7 @@ export const paymentRouter = createTRPCRouter({
     .input(
       z.object({
         courseId: z.number(),
-        proofImageUrl: z.string().url("A valid image URL is required."),
+        proofImageUrl: z.string().min(1, "A valid image URL is required."),
       }),
     )
     .mutation(async ({ ctx, input }) => {

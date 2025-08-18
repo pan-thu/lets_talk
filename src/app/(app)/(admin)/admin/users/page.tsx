@@ -17,6 +17,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Eye,
+  BookOpen,
 } from "lucide-react";
 import { Role } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
@@ -33,6 +35,10 @@ export default function AdminUsersPage() {
     user: any | null;
   }>({ isOpen: false, user: null });
   const [deleteUserModalState, setDeleteUserModalState] = useState<{
+    isOpen: boolean;
+    user: any | null;
+  }>({ isOpen: false, user: null });
+  const [detailsModalState, setDetailsModalState] = useState<{
     isOpen: boolean;
     user: any | null;
   }>({ isOpen: false, user: null });
@@ -208,7 +214,10 @@ export default function AdminUsersPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setIsCreateTeacherModalOpen(true)}
+            onClick={() => {
+              setTeacherForm({ name: "", email: "", password: "" });
+              setIsCreateTeacherModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <UserPlus className="h-4 w-4" />
@@ -306,6 +315,9 @@ export default function AdminUsersPage() {
                   Joined
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Details
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                   Actions
                 </th>
               </tr>
@@ -340,6 +352,15 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                     {format(new Date(user.createdAt), "MMM d, yyyy")}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                    <button
+                      onClick={() => setDetailsModalState({ isOpen: true, user })}
+                      className="inline-flex items-center gap-1 rounded bg-gray-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-gray-700"
+                    >
+                      <Eye className="h-3 w-3" />
+                      View Details
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-2">
@@ -552,6 +573,156 @@ export default function AdminUsersPage() {
               {deleteUserMutation.isPending
                 ? "Deleting..."
                 : "Delete User"}
+            </button>
+          </div>
+        </div>
+      </AdminModalWrapper>
+
+      {/* User Details Modal */}
+      <AdminModalWrapper
+        isOpen={detailsModalState.isOpen}
+        onClose={() => setDetailsModalState({ isOpen: false, user: null })}
+        title={`User Details - ${detailsModalState.user?.name || "Unknown"}`}
+      >
+        <div className="space-y-6">
+          {/* User Info */}
+          <div className="border-b border-gray-200 pb-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">User Information</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-gray-600">Name:</span>
+                <p className="text-gray-900">{detailsModalState.user?.name || "N/A"}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-600">Email:</span>
+                <p className="text-gray-900">{detailsModalState.user?.email || "N/A"}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-600">Role:</span>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getRoleBadgeClass(
+                    detailsModalState.user?.role,
+                  )}`}
+                >
+                  {getRoleIcon(detailsModalState.user?.role)}
+                  {detailsModalState.user?.role}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-600">Joined:</span>
+                <p className="text-gray-900">
+                  {detailsModalState.user?.createdAt
+                    ? format(new Date(detailsModalState.user.createdAt), "MMM d, yyyy")
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Enrollments */}
+          {detailsModalState.user?.role === "STUDENT" && (
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Course Enrollments ({detailsModalState.user?.enrollments?.length || 0})
+              </h3>
+              {detailsModalState.user?.enrollments && detailsModalState.user.enrollments.length > 0 ? (
+                <div className="space-y-3">
+                  {detailsModalState.user.enrollments.map((enrollment: any) => (
+                    <div
+                      key={enrollment.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {enrollment.course?.title || "Unknown Course"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Enrollment ID: {enrollment.id}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          enrollment.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : enrollment.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {enrollment.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No course enrollments found.</p>
+              )}
+            </div>
+          )}
+
+                     {/* Teacher Courses */}
+           {detailsModalState.user?.role === "TEACHER" && (
+             <div>
+               <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
+                 <GraduationCap className="h-5 w-5" />
+                 Assigned Courses ({detailsModalState.user?.taughtCourses?.length || 0})
+               </h3>
+               {detailsModalState.user?.taughtCourses && detailsModalState.user.taughtCourses.length > 0 ? (
+                 <div className="space-y-3">
+                   {detailsModalState.user.taughtCourses.map((course: any) => (
+                    <div
+                      key={course.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {course.title || "Unknown Course"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Course ID: {course.id}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          course.status === "PUBLISHED"
+                            ? "bg-green-100 text-green-800"
+                            : course.status === "DRAFT"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {course.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No assigned courses found.</p>
+              )}
+            </div>
+          )}
+
+          {/* Admin Info */}
+          {detailsModalState.user?.role === "ADMIN" && (
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Administrator Information
+              </h3>
+              <p className="text-gray-500 text-sm">
+                This user has full administrative access to the platform.
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-4">
+            <button
+              type="button"
+              onClick={() => setDetailsModalState({ isOpen: false, user: null })}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Close
             </button>
           </div>
         </div>

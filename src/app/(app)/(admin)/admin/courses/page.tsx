@@ -10,7 +10,6 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Archive,
   Clock,
   XCircle,
@@ -18,6 +17,7 @@ import {
 import { CourseStatus, CourseType } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
+import { ImageUpload } from "~/_components/ui/ImageUpload";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 
 export default function AdminCoursesPage() {
@@ -213,7 +213,18 @@ export default function AdminCoursesPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              setCourseForm({
+                title: "",
+                description: "",
+                price: 0,
+                type: CourseType.VIDEO,
+                status: CourseStatus.DRAFT,
+                coverImageUrl: "",
+                teacherId: "",
+              });
+              setIsCreateModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" /> Create New Course
@@ -317,28 +328,32 @@ export default function AdminCoursesPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => openEditModal(course)}
-                  className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
-                >
-                  <Edit3 className="h-3 w-3" />
-                  Edit
-                </button>
-                <button className="inline-flex items-center gap-1 rounded bg-gray-200 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-300">
-                  <Eye className="h-3 w-3" />
-                  View
-                </button>
-                {course.status !== CourseStatus.ARCHIVED && (
-                  <button 
-                    onClick={() => setArchiveModalState({ isOpen: true, course })}
-                    className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200"
-                  >
-                    <Archive className="h-3 w-3" />
-                    Archive
-                  </button>
-                )}
-              </div>
+                             <div className="flex space-x-2">
+                 <button
+                   onClick={() => openEditModal(course)}
+                   className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
+                 >
+                   <Edit3 className="h-3 w-3" />
+                   Edit
+                 </button>
+                 <a
+                   href={`/admin/courses/${course.id}`}
+                   className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700"
+                 >
+                   <BookOpen className="h-3 w-3" />
+                   View Details
+                 </a>
+
+                 {course.status !== CourseStatus.ARCHIVED && (
+                   <button 
+                     onClick={() => setArchiveModalState({ isOpen: true, course })}
+                     className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200"
+                   >
+                     <Archive className="h-3 w-3" />
+                     Archive
+                   </button>
+                 )}
+               </div>
             </div>
           ))}
         </div>
@@ -456,18 +471,21 @@ export default function AdminCoursesPage() {
                     ))}
                   </select>
                 </div>
-                <input
-                  type="url"
-                  placeholder="Cover Image URL (optional)"
-                  value={courseForm.coverImageUrl}
-                  onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
-                      coverImageUrl: e.target.value,
-                    })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cover Image
+                  </label>
+                  <ImageUpload
+                    uploadType="course-cover"
+                    currentImageUrl={courseForm.coverImageUrl || undefined}
+                    onImageUploaded={(imageUrl) =>
+                      setCourseForm({
+                        ...courseForm,
+                        coverImageUrl: imageUrl,
+                      })
+                    }
+                  />
+                </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <button
                     type="button"

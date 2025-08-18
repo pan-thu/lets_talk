@@ -7,17 +7,19 @@ export const announcementRouter = createTRPCRouter({
         where: {
           isGlobal: true,
         },
+        include: {
+          author: {
+            select: {
+              name: true
+            }
+          }
+        },
         orderBy: {
           createdAt: "desc",
         },
         take: 10,
       });
 
-      return announcements.map((announcement) => ({
-        ...announcement,
-        content: announcement.content.length > 200 
-          ? announcement.content.substring(0, 200) + "..." 
-          : announcement.content,
-      }));
+      return announcements;
     }),
 });
