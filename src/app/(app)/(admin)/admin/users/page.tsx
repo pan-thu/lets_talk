@@ -208,7 +208,10 @@ export default function AdminUsersPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setIsCreateTeacherModalOpen(true)}
+            onClick={() => {
+              setTeacherForm({ name: "", email: "", password: "" });
+              setIsCreateTeacherModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <UserPlus className="h-4 w-4" />

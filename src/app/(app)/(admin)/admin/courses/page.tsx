@@ -213,7 +213,18 @@ export default function AdminCoursesPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              setCourseForm({
+                title: "",
+                description: "",
+                price: 0,
+                type: CourseType.VIDEO,
+                status: CourseStatus.DRAFT,
+                coverImageUrl: "",
+                teacherId: "",
+              });
+              setIsCreateModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" /> Create New Course
