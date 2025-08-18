@@ -12,7 +12,7 @@ export const courseRouter = createTRPCRouter({
       price: z.number().min(0),
       type: z.nativeEnum(CourseType),
       status: z.nativeEnum(CourseStatus),
-      coverImageUrl: z.string().url().optional(),
+      coverImageUrl: z.string().optional(),
       teacherId: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -29,7 +29,7 @@ export const courseRouter = createTRPCRouter({
       price: z.number().min(0).optional(),
       type: z.nativeEnum(CourseType).optional(),
       status: z.nativeEnum(CourseStatus).optional(),
-      coverImageUrl: z.string().url().optional(),
+      coverImageUrl: z.string().optional(),
       teacherId: z.string().nullable().optional(),
     }))
     .mutation(async ({ ctx, input }) => {

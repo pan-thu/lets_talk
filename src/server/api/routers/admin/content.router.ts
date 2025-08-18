@@ -96,6 +96,7 @@ export const contentRouter = createTRPCRouter({
       title: z.string().min(1),
       content: z.string().min(1),
       excerpt: z.string().optional(),
+      imageUrl: z.string().optional(),
       status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -106,6 +107,7 @@ export const contentRouter = createTRPCRouter({
           slug,
           content: input.content,
           excerpt: input.excerpt,
+          imageUrl: input.imageUrl,
           status: input.status,
           authorId: ctx.session.user.id,
         },
@@ -118,6 +120,7 @@ export const contentRouter = createTRPCRouter({
       title: z.string().min(1).optional(),
       content: z.string().min(1).optional(),
       excerpt: z.string().optional(),
+      imageUrl: z.string().optional(),
       status: z.nativeEnum(PostStatus).optional(),
     }))
     .mutation(async ({ ctx, input }) => {

@@ -8,6 +8,7 @@ import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
+import { ImageUpload } from "~/_components/ui/ImageUpload";
 
 export default function AdminBlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,11 +28,13 @@ export default function AdminBlogPage() {
     title: string;
     content: string;
     summary: string;
+    imageUrl: string;
     status: "DRAFT" | "PUBLISHED";
   }>({
     title: "",
     content: "",
     summary: "",
+    imageUrl: "",
     status: "DRAFT",
   });
 
@@ -57,6 +60,7 @@ export default function AdminBlogPage() {
           title: "",
           content: "",
           summary: "",
+          imageUrl: "",
           status: PostStatus.DRAFT,
         });
         alert("Blog post created successfully!");
@@ -97,6 +101,7 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
+        imageUrl: blogPostForm.imageUrl || undefined,
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -109,6 +114,7 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
+        imageUrl: blogPostForm.imageUrl || undefined,
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -125,6 +131,7 @@ export default function AdminBlogPage() {
       title: post.title,
       content: post.content,
       summary: post.summary || "",
+      imageUrl: post.imageUrl || "",
       status: post.status,
     });
     setEditModalState({ isOpen: true, post });
@@ -421,6 +428,21 @@ export default function AdminBlogPage() {
             rows={2}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image
+            </label>
+            <ImageUpload
+              uploadType="blog-image"
+              currentImageUrl={blogPostForm.imageUrl || undefined}
+              onImageUploaded={(imageUrl) =>
+                setBlogPostForm({
+                  ...blogPostForm,
+                  imageUrl: imageUrl,
+                })
+              }
+            />
+          </div>
           <textarea
             placeholder="Blog Post Content"
             value={blogPostForm.content}
@@ -506,6 +528,21 @@ export default function AdminBlogPage() {
             rows={2}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image
+            </label>
+            <ImageUpload
+              uploadType="blog-image"
+              currentImageUrl={blogPostForm.imageUrl || undefined}
+              onImageUploaded={(imageUrl) =>
+                setBlogPostForm({
+                  ...blogPostForm,
+                  imageUrl: imageUrl,
+                })
+              }
+            />
+          </div>
           <textarea
             placeholder="Blog Post Content"
             value={blogPostForm.content}

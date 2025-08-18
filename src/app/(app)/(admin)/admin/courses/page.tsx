@@ -17,6 +17,7 @@ import {
 import { CourseStatus, CourseType } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
+import { ImageUpload } from "~/_components/ui/ImageUpload";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
 
 export default function AdminCoursesPage() {
@@ -470,18 +471,21 @@ export default function AdminCoursesPage() {
                     ))}
                   </select>
                 </div>
-                <input
-                  type="url"
-                  placeholder="Cover Image URL (optional)"
-                  value={courseForm.coverImageUrl}
-                  onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
-                      coverImageUrl: e.target.value,
-                    })
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cover Image
+                  </label>
+                  <ImageUpload
+                    uploadType="course-cover"
+                    currentImageUrl={courseForm.coverImageUrl || undefined}
+                    onImageUploaded={(imageUrl) =>
+                      setCourseForm({
+                        ...courseForm,
+                        coverImageUrl: imageUrl,
+                      })
+                    }
+                  />
+                </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <button
                     type="button"

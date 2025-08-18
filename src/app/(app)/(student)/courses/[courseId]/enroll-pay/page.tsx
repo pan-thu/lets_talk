@@ -7,6 +7,7 @@ import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation"
 import { UploadCloud, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { api } from "~/trpc/react";
 import ConfirmationToast from "~/_components/ui/ConfirmationToast";
+import { ImageUpload } from "~/_components/ui/ImageUpload";
 
 const ProofUploadForm = ({
   courseId,
@@ -15,9 +16,7 @@ const ProofUploadForm = ({
   courseId: number;
   onProofSubmitted: () => void;
 }) => {
-  const [file, setFile] = useState<File | null>(null);
   const [proofImageUrl, setProofImageUrl] = useState<string>("");
-  const [isUsingUrlInput, setIsUsingUrlInput] = useState(true); // Default to URL input for easier testing
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,34 +30,16 @@ const ProofUploadForm = ({
 
     try {
       // Validate proof input first
-      let validProofUrl = "";
-      if (isUsingUrlInput) {
-        if (!proofImageUrl) {
-          setError("Please enter a valid image URL.");
-          setIsSubmitting(false);
-          return;
-        }
-        try {
-          new URL(proofImageUrl);
-          validProofUrl = proofImageUrl;
-        } catch (_) {
-          setError("The provided URL is not valid.");
-          setIsSubmitting(false);
-          return;
-        }
-      } else {
-        if (!file) {
-          setError("Please select a file to upload.");
-          setIsSubmitting(false);
-          return;
-        }
-        validProofUrl = `https://example.com/uploads/proof_${courseId}_${file.name}`;
+      if (!proofImageUrl) {
+        setError("Please upload a payment proof image.");
+        setIsSubmitting(false);
+        return;
       }
 
       // Create enrollment and payment records with proof in one transaction
       await confirmPaymentMutation.mutateAsync({
         courseId,
-        proofImageUrl: validProofUrl,
+        proofImageUrl: proofImageUrl,
       });
 
       onProofSubmitted();
@@ -72,61 +53,14 @@ const ProofUploadForm = ({
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-4">
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-700">
-            Upload Payment Proof (Screenshot)
-          </label>
-          <button
-            type="button"
-            onClick={() => setIsUsingUrlInput(!isUsingUrlInput)}
-            className="text-xs text-indigo-600 hover:text-indigo-800 focus:outline-none"
-          >
-            {isUsingUrlInput
-              ? "Use File Upload Instead"
-              : "Use URL Input Instead"}
-          </button>
-        </div>
-
-        {isUsingUrlInput ? (
-          <div>
-            <input
-              type="url"
-              value={proofImageUrl}
-              onChange={(e) => setProofImageUrl(e.target.value)}
-              placeholder="https://example.com/your-payment-screenshot.jpg"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              For testing, please enter a publicly accessible image URL.
-            </p>
-          </div>
-        ) : (
-          <div className="flex w-full items-center justify-center">
-            <label
-              htmlFor="proof-upload"
-              className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
-            >
-              <UploadCloud className="mb-4 h-8 w-8 text-gray-500" />
-              <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">Click to upload</span> or drag
-                and drop
-              </p>
-              <input
-                id="proof-upload"
-                type="file"
-                className="hidden"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                accept="image/png, image/jpeg, image/webp"
-              />
-            </label>
-          </div>
-        )}
-
-        {file && !isUsingUrlInput && (
-          <p className="mt-2 text-xs text-gray-500">
-            Selected file: {file.name}
-          </p>
-        )}
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Upload Payment Proof (Screenshot)
+        </label>
+        <ImageUpload
+          uploadType="payment-proof"
+          currentImageUrl={proofImageUrl || undefined}
+          onImageUploaded={(imageUrl) => setProofImageUrl(imageUrl)}
+        />
       </div>
 
       {error && (
