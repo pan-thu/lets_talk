@@ -400,14 +400,7 @@ export default function AdminSupportPage() {
                   </td>
                   <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-2">
-                      <button
-                        onClick={() =>
-                          setDetailModalState({ isOpen: true, ticket })
-                        }
-                        className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
-                      >
-                        View
-                      </button>
+
                       <button
                         onClick={() => openResponseModal(ticket)}
                         className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700"

@@ -10,7 +10,6 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Archive,
   Clock,
   XCircle,
@@ -328,28 +327,32 @@ export default function AdminCoursesPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => openEditModal(course)}
-                  className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
-                >
-                  <Edit3 className="h-3 w-3" />
-                  Edit
-                </button>
-                <button className="inline-flex items-center gap-1 rounded bg-gray-200 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-300">
-                  <Eye className="h-3 w-3" />
-                  View
-                </button>
-                {course.status !== CourseStatus.ARCHIVED && (
-                  <button 
-                    onClick={() => setArchiveModalState({ isOpen: true, course })}
-                    className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200"
-                  >
-                    <Archive className="h-3 w-3" />
-                    Archive
-                  </button>
-                )}
-              </div>
+                             <div className="flex space-x-2">
+                 <button
+                   onClick={() => openEditModal(course)}
+                   className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
+                 >
+                   <Edit3 className="h-3 w-3" />
+                   Edit
+                 </button>
+                 <a
+                   href={`/admin/courses/${course.id}`}
+                   className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-700"
+                 >
+                   <BookOpen className="h-3 w-3" />
+                   View Details
+                 </a>
+
+                 {course.status !== CourseStatus.ARCHIVED && (
+                   <button 
+                     onClick={() => setArchiveModalState({ isOpen: true, course })}
+                     className="inline-flex items-center gap-1 rounded bg-red-100 px-3 py-1.5 text-sm text-red-700 transition-colors hover:bg-red-200"
+                   >
+                     <Archive className="h-3 w-3" />
+                     Archive
+                   </button>
+                 )}
+               </div>
             </div>
           ))}
         </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
-import { FileText, Plus, Edit3, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { FileText, Plus, Edit3, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock } from "lucide-react";
 import { PostStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
@@ -371,15 +371,7 @@ export default function AdminBlogPage() {
                   <Trash2 className="h-3 w-3" />
                   Delete
                 </button>
-                {post.slug && (
-                  <button
-                    onClick={() => window.open(`/blog/${post.slug}`, "_blank")}
-                    className="inline-flex items-center gap-1 rounded bg-gray-200 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-300"
-                  >
-                    <Eye className="h-3 w-3" />
-                    View
-                  </button>
-                )}
+
               </div>
             </div>
           ))}

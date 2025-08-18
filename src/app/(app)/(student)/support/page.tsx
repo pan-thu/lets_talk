@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { TicketPriority, TicketStatus } from "@prisma/client";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
+import { AdminModalWrapper } from "~/_components/ui/AdminModalWrapper";
 
 interface CreateTicketModal {
   isOpen: boolean;
@@ -377,95 +378,80 @@ export default function StudentSupportPage() {
       )}
 
       {/* Create Ticket Modal */}
-      {createModal.isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
-              onClick={() => setCreateModal({ isOpen: false })}
+      <AdminModalWrapper
+        isOpen={createModal.isOpen}
+        onClose={() => setCreateModal({ isOpen: false })}
+        title="Create Support Ticket"
+             >
+         <div className="space-y-4">
+           <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Subject"
+              value={ticketForm.subject}
+              onChange={(e) =>
+                setTicketForm({
+                  ...ticketForm,
+                  subject: e.target.value,
+                })
+              }
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-
-            <div className="inline-block transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 sm:align-middle">
-              <div>
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                  <Plus className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Create Support Ticket
-                  </h3>
-                  <div className="mt-4 space-y-4 text-left">
-                    <input
-                      type="text"
-                      placeholder="Subject"
-                      value={ticketForm.subject}
-                      onChange={(e) =>
-                        setTicketForm({
-                          ...ticketForm,
-                          subject: e.target.value,
-                        })
-                      }
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                    <textarea
-                      placeholder="Describe your issue in detail..."
-                      value={ticketForm.description}
-                      onChange={(e) =>
-                        setTicketForm({
-                          ...ticketForm,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={5}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                    <select
-                      value={ticketForm.priority}
-                      onChange={(e) =>
-                        setTicketForm({
-                          ...ticketForm,
-                          priority: e.target.value as TicketPriority,
-                        })
-                      }
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <option value={TicketPriority.LOW}>Low Priority</option>
-                      <option value={TicketPriority.MEDIUM}>
-                        Medium Priority
-                      </option>
-                      <option value={TicketPriority.HIGH}>High Priority</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                <button
-                  type="button"
-                  onClick={handleCreateTicket}
-                  disabled={
-                    !ticketForm.subject ||
-                    !ticketForm.description ||
-                    createTicketMutation.isPending
-                  }
-                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:col-start-2 sm:text-sm"
-                >
-                  {createTicketMutation.isPending
-                    ? "Creating..."
-                    : "Create Ticket"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCreateModal({ isOpen: false })}
-                  disabled={createTicketMutation.isPending}
-                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:col-start-1 sm:mt-0 sm:text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <textarea
+              placeholder="Describe your issue in detail..."
+              value={ticketForm.description}
+              onChange={(e) =>
+                setTicketForm({
+                  ...ticketForm,
+                  description: e.target.value,
+                })
+              }
+              rows={5}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+            <select
+              value={ticketForm.priority}
+              onChange={(e) =>
+                setTicketForm({
+                  ...ticketForm,
+                  priority: e.target.value as TicketPriority,
+                })
+              }
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value={TicketPriority.LOW}>Low Priority</option>
+              <option value={TicketPriority.MEDIUM}>
+                Medium Priority
+              </option>
+              <option value={TicketPriority.HIGH}>High Priority</option>
+            </select>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={() => setCreateModal({ isOpen: false })}
+              disabled={createTicketMutation.isPending}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateTicket}
+              disabled={
+                !ticketForm.subject ||
+                !ticketForm.description ||
+                createTicketMutation.isPending
+              }
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {createTicketMutation.isPending
+                ? "Creating..."
+                : "Create Ticket"}
+            </button>
           </div>
         </div>
-      )}
+      </AdminModalWrapper>
     </div>
   );
 }

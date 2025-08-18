@@ -5,6 +5,51 @@ import { PaymentStatus, EnrollmentStatus } from "@prisma/client";
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
 
 export const paymentRouter = createTRPCRouter({
+  listAllPayments: adminProcedure
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(10),
+      search: z.string().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { page, limit, search } = input;
+      const skip = (page - 1) * limit;
+
+      const where = {
+        ...(search && {
+          OR: [
+            { user: { name: { contains: search } } },
+            { user: { email: { contains: search } } },
+            { course: { title: { contains: search } } },
+            { paymentReferenceId: { contains: search } },
+          ],
+        }),
+      };
+
+      const [payments, total] = await Promise.all([
+        ctx.db.payment.findMany({
+          where,
+          skip,
+          take: limit,
+          include: {
+            user: { select: { name: true, email: true } },
+            course: { select: { title: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+        ctx.db.payment.count({ where }),
+      ]);
+
+      return {
+        payments,
+        pagination: {
+          page,
+          pages: Math.ceil(total / limit),
+          total,
+        },
+      };
+    }),
+
   listPendingPayments: adminProcedure
     .input(z.object({
       page: z.number().min(1).default(1),
@@ -101,5 +146,22 @@ export const paymentRouter = createTRPCRouter({
 
         return payment;
       });
+    }),
+
+  getPaymentStats: adminProcedure
+    .query(async ({ ctx }) => {
+      const [total, pending, approved, rejected] = await Promise.all([
+        ctx.db.payment.count(),
+        ctx.db.payment.count({ where: { status: PaymentStatus.PROOF_SUBMITTED } }),
+        ctx.db.payment.count({ where: { status: PaymentStatus.COMPLETED } }),
+        ctx.db.payment.count({ where: { status: PaymentStatus.REJECTED } }),
+      ]);
+
+      return {
+        total,
+        pending,
+        approved,
+        rejected,
+      };
     }),
 });
