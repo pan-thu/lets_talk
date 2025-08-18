@@ -661,16 +661,16 @@ export default function AdminUsersPage() {
             </div>
           )}
 
-          {/* Teacher Courses */}
-          {detailsModalState.user?.role === "TEACHER" && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
-                Assigned Courses ({detailsModalState.user?.courses?.length || 0})
-              </h3>
-              {detailsModalState.user?.courses && detailsModalState.user.courses.length > 0 ? (
-                <div className="space-y-3">
-                  {detailsModalState.user.courses.map((course: any) => (
+                     {/* Teacher Courses */}
+           {detailsModalState.user?.role === "TEACHER" && (
+             <div>
+               <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
+                 <GraduationCap className="h-5 w-5" />
+                 Assigned Courses ({detailsModalState.user?.taughtCourses?.length || 0})
+               </h3>
+               {detailsModalState.user?.taughtCourses && detailsModalState.user.taughtCourses.length > 0 ? (
+                 <div className="space-y-3">
+                   {detailsModalState.user.taughtCourses.map((course: any) => (
                     <div
                       key={course.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"

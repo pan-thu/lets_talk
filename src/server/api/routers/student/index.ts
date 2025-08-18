@@ -6,7 +6,6 @@ import { lessonCommentRouter } from "./lessonComment.router";
 import { errorReportRouter } from "./errorReport.router";
 import { resourceRouter } from "./resource.router";
 import { submissionRouter } from "./submission.router";
-import { supportRouter } from "./support.router";
 
 export const studentRouter = createTRPCRouter({
   payment: paymentRouter,
@@ -16,5 +15,4 @@ export const studentRouter = createTRPCRouter({
   errorReport: errorReportRouter,
   resource: resourceRouter,
   submission: submissionRouter,
-  support: supportRouter,
 });

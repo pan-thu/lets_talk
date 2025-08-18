@@ -170,7 +170,7 @@ export const courseRouter = createTRPCRouter({
         stats: {
           totalEnrollments: enrollments.length,
           activeEnrollments: stats.find(s => s.status === "ACTIVE")?._count.id || 0,
-          pendingEnrollments: stats.find(s => s.status === "PENDING")?._count.id || 0,
+          pendingEnrollments: stats.find(s => s.status === "PENDING_PAYMENT_CONFIRMATION")?._count.id || 0,
           totalRevenue: totalRevenue._sum.amount || 0,
           totalResources: resources.length,
           totalErrorReports: errorReports.length,

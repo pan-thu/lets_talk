@@ -27,13 +27,11 @@ export default function AdminBlogPage() {
     title: string;
     content: string;
     summary: string;
-    tags: string;
     status: "DRAFT" | "PUBLISHED";
   }>({
     title: "",
     content: "",
     summary: "",
-    tags: "",
     status: "DRAFT",
   });
 
@@ -59,7 +57,6 @@ export default function AdminBlogPage() {
           title: "",
           content: "",
           summary: "",
-          tags: "",
           status: PostStatus.DRAFT,
         });
         alert("Blog post created successfully!");
@@ -100,10 +97,6 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
-        tags: blogPostForm.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -116,10 +109,6 @@ export default function AdminBlogPage() {
         title: blogPostForm.title,
         content: blogPostForm.content,
         excerpt: blogPostForm.summary || undefined,
-        tags: blogPostForm.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
         status: blogPostForm.status as PostStatus,
       });
     }
@@ -136,7 +125,6 @@ export default function AdminBlogPage() {
       title: post.title,
       content: post.content,
       summary: post.summary || "",
-      tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
       status: post.status,
     });
     setEditModalState({ isOpen: true, post });
@@ -221,7 +209,6 @@ export default function AdminBlogPage() {
                 title: "",
                 content: "",
                 summary: "",
-                tags: "",
                 status: "DRAFT",
               });
               setIsCreateModalOpen(true);
@@ -446,18 +433,7 @@ export default function AdminBlogPage() {
             rows={6}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          <input
-            type="text"
-            placeholder="Tags (comma-separated)"
-            value={blogPostForm.tags}
-            onChange={(e) =>
-              setBlogPostForm({
-                ...blogPostForm,
-                tags: e.target.value,
-              })
-            }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+
           <select
             value={blogPostForm.status}
             onChange={(e) =>
@@ -542,18 +518,7 @@ export default function AdminBlogPage() {
             rows={6}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
-          <input
-            type="text"
-            placeholder="Tags (comma-separated)"
-            value={blogPostForm.tags}
-            onChange={(e) =>
-              setBlogPostForm({
-                ...blogPostForm,
-                tags: e.target.value,
-              })
-            }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+
           <select
             value={blogPostForm.status}
             onChange={(e) =>

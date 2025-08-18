@@ -156,18 +156,7 @@ export function Sidebar() {
                 <GraduationCap size={iconSize} />
                 {!isCollapsed && <span>Course</span>}
               </Link>
-              <Link
-                href="/support"
-                className={`sidebar-item flex items-center gap-3 rounded ${
-                  pathname.startsWith("/support") ? "active" : ""
-                } ${
-                  isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
-                title="Support"
-              >
-                <MessageCircle size={iconSize} />
-                {!isCollapsed && <span>Support</span>}
-              </Link>
+
             </>
           )}
 
@@ -248,18 +237,7 @@ export function Sidebar() {
                 <FileText size={iconSize} />
                 {!isCollapsed && <span>Blog Posts</span>}
               </Link>
-              <Link
-                href="/admin/support"
-                className={`sidebar-item flex items-center gap-3 rounded ${
-                  pathname.startsWith("/admin/support") ? "active" : ""
-                } ${
-                  isCollapsed ? "justify-center py-3" : "px-3 py-2"
-                } text-sm font-medium transition-all duration-200 ease-out hover:translate-x-1`}
-                title="Support Tickets"
-              >
-                <MessageCircle size={iconSize} />
-                {!isCollapsed && <span>Support Tickets</span>}
-              </Link>
+
 
             </>
           )}

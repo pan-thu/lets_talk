@@ -80,7 +80,7 @@ export const userRouter = createTRPCRouter({
               },
             },
             // Include courses for teachers
-            courses: {
+            taughtCourses: {
               select: {
                 id: true,
                 title: true,
