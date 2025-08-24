@@ -1,26 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2Icon, MicIcon } from "lucide-react";
+import { CheckCircle2Icon, MicIcon, Video } from "lucide-react";
 
-// Using the same cube icon as WeekItem for consistency
-const CubeIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 2l8 4.5v11L12 22l-8-4.5v-11L12 2z" />
-    <path d="M12 2v20" />
-    <path d="M4 6.5l8 4.5 8-4.5" />
-  </svg>
-);
+// Removed CubeIcon; use Video for non-audio lessons to match teacher icons
 
 interface LessonItemProps {
   lessonId: number;
@@ -75,13 +58,9 @@ export function LessonItem({
       >
         <div className="flex flex-1 items-center">
           {isExercise ? (
-            <MicIcon
-              className={`mr-3 h-5 w-5 transition-colors duration-200 ${textColor}`}
-            />
+            <MicIcon className={`mr-3 h-5 w-5 transition-colors duration-200 ${textColor}`} />
           ) : (
-            <CubeIcon
-              className={`mr-3 h-5 w-5 transition-colors duration-200 ${textColor}`}
-            />
+            <Video className={`mr-3 h-5 w-5 transition-colors duration-200 ${textColor}`} />
           )}
           <Link
             href={linkHref}

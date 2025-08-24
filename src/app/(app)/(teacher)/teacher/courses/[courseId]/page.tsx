@@ -209,6 +209,15 @@ function TeacherResourceItem({ resource, onEdit, onDelete }: { resource: any; on
         <span className="font-medium text-gray-800">{resource.title}</span>
       </div>
       <div className="flex items-center gap-2">
+        {resource.type === "AUDIO_EXERCISE" && (
+          <a
+            href={`/teacher/exercises/${resource.id}`}
+            className="rounded p-1.5 text-purple-600 hover:bg-purple-50"
+            title="Review Submissions"
+          >
+            Review
+          </a>
+        )}
         <button onClick={onEdit} className="rounded p-1.5 text-blue-600 hover:bg-blue-50" title="Edit Resource"><Edit size={16} /></button>
         <button onClick={onDelete} className="rounded p-1.5 text-red-600 hover:bg-red-50" title="Delete Resource"><Trash2 size={16} /></button>
       </div>

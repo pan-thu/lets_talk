@@ -75,6 +75,9 @@ export const teacherCourseRouter = createTRPCRouter({
           week: true,
           order: true,
           createdAt: true,
+          attachments: {
+            select: { id: true, fileUrl: true, mimeType: true, filename: true, createdAt: true },
+          },
         },
         orderBy: [{ week: "asc" }, { order: "asc" }],
       });

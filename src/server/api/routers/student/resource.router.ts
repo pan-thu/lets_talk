@@ -90,11 +90,8 @@ export const resourceRouter = createTRPCRouter({
           type: "AUDIO_EXERCISE",
         },
         include: {
-          course: {
-            select: {
-              title: true,
-            },
-          },
+          course: { select: { title: true } },
+          attachments: { select: { id: true, fileUrl: true, mimeType: true, filename: true, createdAt: true } },
         },
       });
 
@@ -105,14 +102,44 @@ export const resourceRouter = createTRPCRouter({
         });
       }
 
+      // Fetch student's existing submissions for this exercise
+      const mySubmissions = await ctx.db.submission.findMany({
+        where: {
+          resourceId: exercise.id,
+          enrollmentId: enrollment.id,
+          studentId: ctx.session.user.id,
+        },
+      });
+
+      const audioItems = exercise.attachments
+        .filter((a) => a.mimeType?.startsWith("audio/"))
+        .map((a) => {
+          const mine = mySubmissions.find((s) => s.resourceAttachmentId === a.id);
+          return {
+            attachmentId: a.id,
+            fileUrl: a.fileUrl,
+            filename: a.filename,
+            submitted: Boolean(mine),
+            mySubmission: mine
+              ? {
+                  id: mine.id,
+                  status: mine.status,
+                  grade: mine.grade,
+                  feedback: mine.feedback,
+                  audioUrl: mine.audioUrl,
+                }
+              : null,
+          };
+        });
+
       return {
         id: exercise.id,
         title: exercise.title,
-        textInstructions: exercise.content, // content field stores text instructions
-        teacherAudioUrl: exercise.url, // url field stores teacher's audio prompt
+        textInstructions: exercise.content,
         courseTitle: exercise.course.title,
         courseId: exercise.courseId,
-        enrollmentId: enrollment.id, // Include enrollment ID for submissions
+        enrollmentId: enrollment.id,
+        audioItems,
       };
     }),
 });

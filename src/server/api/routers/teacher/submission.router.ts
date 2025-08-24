@@ -4,6 +4,74 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, teacherProcedure } from "~/server/api/trpc";
 
 export const submissionRouter = createTRPCRouter({
+  // Get submissions grouped by attachment for one exercise (teacher view)
+  getForExercise: teacherProcedure
+    .input(
+      z.object({
+        exerciseId: z.number().int(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { exerciseId } = input;
+      const teacherId = ctx.session.user.id;
+
+      const resource = await ctx.db.resource.findUnique({
+        where: { id: exerciseId },
+        include: {
+          course: { select: { id: true, teacherId: true, title: true } },
+          attachments: true,
+        },
+      });
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Exercise not found." });
+      }
+      if (resource.course.teacherId !== teacherId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to view this exercise." });
+      }
+
+      const submissions = await ctx.db.submission.findMany({
+        where: { resourceId: exerciseId },
+        include: {
+          student: { select: { id: true, name: true, email: true, image: true } },
+          grader: { select: { id: true, name: true } },
+        },
+        orderBy: { submittedAt: "desc" },
+      });
+
+      // Group submissions by attachment id
+      const byAttachment: Record<number, any[]> = {};
+      for (const sub of submissions) {
+        const key = sub.resourceAttachmentId ?? -1;
+        if (!byAttachment[key]) byAttachment[key] = [];
+        byAttachment[key].push(sub);
+      }
+
+      return {
+        exercise: {
+          id: resource.id,
+          title: resource.title,
+          courseId: resource.courseId,
+          courseTitle: resource.course.title,
+        },
+        attachments: resource.attachments.map((a) => ({
+          id: a.id,
+          fileUrl: a.fileUrl,
+          filename: a.filename,
+          mimeType: a.mimeType,
+          submissions: (byAttachment[a.id] || []).map((s) => ({
+            id: s.id,
+            audioUrl: s.audioUrl,
+            status: s.status,
+            grade: s.grade,
+            feedback: s.feedback,
+            submittedAt: s.submittedAt,
+            student: s.student,
+            grader: s.grader,
+          })),
+        })),
+      };
+    }),
   // Get all submissions for a course (teacher view)
   getSubmissionsForCourse: teacherProcedure
     .input(
@@ -148,17 +216,8 @@ export const submissionRouter = createTRPCRouter({
             graderId: teacherId,
           },
           include: {
-            student: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-            resource: {
-              select: {
-                title: true,
-              },
-            },
+            student: { select: { name: true, email: true } },
+            resource: { select: { title: true } },
           },
         });
 

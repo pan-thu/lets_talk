@@ -227,6 +227,7 @@ model ResourceAttachment {
   mimeType   String
   filename   String
   createdAt  DateTime @default(now())
+  submissions Submission[]
 
   @@index([resourceId])
 }
@@ -263,6 +264,9 @@ model Submission {
   resource     Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
   resourceId   Int?
 
+  resourceAttachment   ResourceAttachment? @relation(fields: [resourceAttachmentId], references: [id], onDelete: SetNull)
+  resourceAttachmentId Int?
+
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   enrollmentId Int
 
@@ -276,6 +280,8 @@ model Submission {
   @@index([studentId])
   @@index([graderId])
   @@index([resourceId])
+  @@index([resourceAttachmentId])
+  @@unique([resourceAttachmentId, enrollmentId, studentId])
 }
 
 model Payment {

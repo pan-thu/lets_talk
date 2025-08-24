@@ -9,12 +9,14 @@ type RecordingState = "idle" | "recording" | "recorded" | "submitted";
 interface StudentAudioRecorderProps {
   exerciseId?: number;
   enrollmentId?: number;
+  resourceAttachmentId?: number;
   onSubmissionSuccess?: () => void;
 }
 
 export function StudentAudioRecorder({
   exerciseId,
   enrollmentId,
+  resourceAttachmentId,
   onSubmissionSuccess,
 }: StudentAudioRecorderProps) {
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
@@ -223,6 +225,7 @@ export function StudentAudioRecorder({
       submitAudioMutation.mutate({
         exerciseId,
         enrollmentId,
+        resourceAttachmentId,
         audioFileUrl: uploadedUrl,
       });
     } catch (error) {

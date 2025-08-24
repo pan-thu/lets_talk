@@ -285,4 +285,43 @@ export const resourceRouter = createTRPCRouter({
         });
       }
     }),
+
+  // Append new attachments to an existing resource (used for AUDIO_EXERCISE items)
+  addAttachments: teacherProcedure
+    .input(
+      z.object({
+        resourceId: z.number().int().positive(),
+        attachments: z.array(
+          z.object({ fileUrl: z.string().min(1), mimeType: z.string().min(1), filename: z.string().min(1) })
+        ).min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { resourceId, attachments } = input;
+      const teacherId = ctx.session.user.id;
+
+      // Verify ownership
+      const resource = await ctx.db.resource.findUnique({
+        where: { id: resourceId },
+        include: { course: { select: { teacherId: true } } },
+      });
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found." });
+      }
+      if (resource.course.teacherId !== teacherId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to modify this resource." });
+      }
+
+      await ctx.db.resourceAttachment.createMany({
+        data: attachments.map((a) => ({ resourceId, fileUrl: a.fileUrl, mimeType: a.mimeType, filename: a.filename })),
+      });
+
+      const updated = await ctx.db.resource.findUnique({
+        where: { id: resourceId },
+        include: { attachments: true },
+      });
+
+      return { success: true, attachments: updated?.attachments ?? [] };
+    }),
 });
