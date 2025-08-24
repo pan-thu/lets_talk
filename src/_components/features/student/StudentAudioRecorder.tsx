@@ -29,6 +29,8 @@ export function StudentAudioRecorder({
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+  const [playbackDuration, setPlaybackDuration] = useState(0);
 
   // tRPC mutation for submitting audio
   const submitAudioMutation =
@@ -188,6 +190,22 @@ export function StudentAudioRecorder({
     }
   };
 
+  // Track playback progress for preview and after submission
+  useEffect(() => {
+    const el = audioPlayerRef.current;
+    if (!el) return;
+    const onTime = () => setPlaybackProgress(el.currentTime);
+    const onLoaded = () => setPlaybackDuration(el.duration || 0);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("loadedmetadata", onLoaded);
+    return () => {
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("loadedmetadata", onLoaded);
+    };
+  }, [audioUrl]);
+
+  const playbackPercent = playbackDuration > 0 ? Math.min(100, Math.round((playbackProgress / playbackDuration) * 100)) : 0;
+
   const handleSubmitClick = async () => {
     if (
       !audioBlob ||
@@ -279,13 +297,17 @@ export function StudentAudioRecorder({
         )}
       </div>
 
-      {/* Hidden Audio Player for Playback */}
+      {/* Audio Player + Progress */}
       {audioUrl && (
-        <audio
-          ref={audioPlayerRef}
-          src={audioUrl}
-          style={{ display: "none" }}
-        />
+        <div className="w-full max-w-lg mx-auto">
+          <audio ref={audioPlayerRef} src={audioUrl} className="w-full" />
+          <div className="mt-2 h-1 w-full rounded bg-gray-200">
+            <div className="h-1 rounded bg-blue-600" style={{ width: `${playbackPercent}%` }} />
+          </div>
+          <div className="mt-1 text-center text-xs text-gray-500">
+            {formatTime(Math.floor(playbackProgress))} / {formatTime(Math.floor(playbackDuration || 0))}
+          </div>
+        </div>
       )}
 
       {/* Recording Controls */}

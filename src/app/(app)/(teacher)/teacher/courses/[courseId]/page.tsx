@@ -387,9 +387,6 @@ export default function TeacherCourseManagementPage({
             </div>
           </div>
 
-          {/* Student Submissions Section */}
-          <TeacherSubmissionsSection courseId={courseId} />
-
           {/* Other sections like Live Sessions, Students etc. can go here */}
         </div>
       )}
