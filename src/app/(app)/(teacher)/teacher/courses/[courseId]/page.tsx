@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, type ReactNode, useMemo } from "react";
+import { use, useState, type ReactNode, useMemo, useRef } from "react";
 import {
   Plus,
   Edit,
@@ -416,9 +416,10 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
     content: editingResource?.content || "",
     week: editingResource?.week || initialWeek || 1,
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const audioPickerRef = useRef<HTMLInputElement | null>(null);
 
   const utils = api.useUtils();
 
@@ -445,30 +446,47 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
       ];
 
       let finalUrl = formData.url;
+      // Collects any uploaded attachments from primary input (overflow) and the attachments input
+      const attachmentsPayload: { fileUrl: string; mimeType: string; filename: string }[] = [];
 
       if (mediaTypesRequiringFile.includes(formData.type as ResourceType)) {
-        if (!selectedFile && !editingResource) {
-          setUploadError("Please select a file to upload for this resource type.");
+        if (selectedFiles.length === 0 && !editingResource) {
+          setUploadError("Please select at least one file to upload for this resource type.");
           return;
         }
 
-        if (selectedFile) {
-          const fd = new FormData();
-          const inferredType = formData.type === ResourceType.VIDEO ? "video" : formData.type === ResourceType.AUDIO_EXERCISE ? "audio" : formData.type === ResourceType.PDF ? "pdf" : "file";
-          fd.append("file", selectedFile);
-          fd.append("type", inferredType);
+        // For AUDIO_EXERCISE: all selected files are attachments (exercise items). main url stays empty
+        // For VIDEO: first selected becomes main url if video; rest go to attachments
+        if (selectedFiles.length > 0) {
+          const uploadedFileUrls: { fileUrl: string; mimeType: string; filename: string }[] = [];
 
-          const res = await fetch("/api/upload/media", { method: "POST", body: fd });
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data?.error || "Upload failed");
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const f = selectedFiles[i]!;
+            const fd = new FormData();
+            const inferredType = formData.type === ResourceType.VIDEO ? "video" : "audio";
+            fd.append("file", f);
+            fd.append("type", inferredType);
+            const res = await fetch("/api/upload/media", { method: "POST", body: fd });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data?.error || "Upload failed");
+            }
+            uploadedFileUrls.push({ fileUrl: data.fileUrl as string, mimeType: f.type || "application/octet-stream", filename: f.name });
           }
-          finalUrl = data.fileUrl as string;
+
+          if (formData.type === ResourceType.VIDEO) {
+            // Main video url is the first uploaded; others go to attachments
+            finalUrl = uploadedFileUrls[0]?.fileUrl || "";
+            attachmentsPayload.push(...uploadedFileUrls.slice(1));
+          } else {
+            // AUDIO_EXERCISE: treat all as attachments (exercise items)
+            attachmentsPayload.push(...uploadedFileUrls);
+            finalUrl = "";
+          }
         }
       }
 
       // Upload attachments (optional)
-      const attachmentsPayload: { fileUrl: string; mimeType: string; filename: string }[] = [];
       if (attachmentFiles.length > 0) {
         for (const f of attachmentFiles) {
           const afd = new FormData();
@@ -510,18 +528,70 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
           <select value={formData.type} onChange={e => setFormData(f => ({ ...f, type: e.target.value as ResourceType }))} className="w-full rounded border p-2">
             {Object.values(ResourceType).map(type => <option key={type} value={type}>{type.replace("_", " ")}</option>)}
           </select>
-          {/* File input for media types (VIDEO/AUDIO) */}
-          {(formData.type === ResourceType.VIDEO || formData.type === ResourceType.AUDIO_EXERCISE) ? (
+          {/* Primary media input */}
+          {formData.type === ResourceType.VIDEO ? (
             <div className="space-y-2">
               <input
                 type="file"
                 className="w-full rounded border p-2"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                accept={formData.type === ResourceType.VIDEO ? "video/*" : "audio/*"}
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null;
+                  setSelectedFiles(f ? [f] : []);
+                }}
+                accept="video/*"
               />
-              {editingResource && !selectedFile && (
-                <p className="text-xs text-gray-500">Current file: {formData.url || "(none)"}</p>
+              {selectedFiles.length > 0 && (
+                <p className="text-xs text-gray-600">Selected: {selectedFiles[0]?.name}</p>
               )}
+              {editingResource && selectedFiles.length === 0 && (
+                <p className="text-xs text-gray-500">Current video: {formData.url || "(none)"}</p>
+              )}
+              {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+            </div>
+          ) : formData.type === ResourceType.AUDIO_EXERCISE ? (
+            <div className="space-y-2">
+              {/* Chips list */}
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedFiles.map((f, idx) => (
+                    <span key={`${f.name}-${idx}`} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs text-gray-700">
+                      <span className="max-w-[180px] truncate" title={f.name}>{f.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))}
+                        className="rounded bg-red-100 px-1.5 py-0.5 text-red-600 hover:bg-red-200"
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => audioPickerRef.current?.click()}
+                  className="rounded border px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Add audio
+                </button>
+                <span className="text-xs text-gray-500">You can add multiple audio items</span>
+              </div>
+              <input
+                ref={audioPickerRef}
+                type="file"
+                className="hidden"
+                multiple
+                accept="audio/*"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+                  setSelectedFiles((prev) => [...prev, ...files]);
+                  // reset value so selecting same file again re-triggers change
+                  e.currentTarget.value = "";
+                }}
+              />
               {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
             </div>
           ) : (
@@ -530,7 +600,9 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
 
           {/* Attachment uploader (multiple) */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Attachments (optional)</label>
+            <label className="text-sm font-medium text-gray-700">
+              Attachments (optional{formData.type === ResourceType.AUDIO_EXERCISE ? ", add more audio files here" : ""})
+            </label>
             <input
               type="file"
               multiple

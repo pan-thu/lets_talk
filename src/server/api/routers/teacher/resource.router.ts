@@ -19,7 +19,7 @@ export const resourceRouter = createTRPCRouter({
         type: z.nativeEnum(ResourceType).refine((t) => t === "VIDEO" || t === "AUDIO_EXERCISE", {
           message: "Type must be VIDEO or AUDIO_EXERCISE",
         }),
-        url: z.string().min(1),
+        url: z.string().optional(),
         content: z.string().optional(),
         week: z.number().int().positive(),
         releaseDate: z.date().optional(),
@@ -86,7 +86,7 @@ export const resourceRouter = createTRPCRouter({
             courseId,
             week,
             order: newOrder,
-            url: resourceData.url,
+            url: resourceData.url || "",
             attachments: resourceData.attachments && resourceData.attachments.length > 0 ? {
               createMany: { data: resourceData.attachments.map(a => ({ fileUrl: a.fileUrl, mimeType: a.mimeType, filename: a.filename })) }
             } : undefined,
