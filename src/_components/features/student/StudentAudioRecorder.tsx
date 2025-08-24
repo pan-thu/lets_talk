@@ -200,22 +200,34 @@ export function StudentAudioRecorder({
     setError(null);
 
     try {
-      // For Phase 2, we'll simulate the upload process
-      // In Phase 3, this would upload to Cloudflare R2
+      // Upload the recorded blob to our media upload endpoint
+      const formData = new FormData();
+      const file = new File([audioBlob], `exercise-${exerciseId}-${enrollmentId}.webm`, {
+        type: "audio/webm",
+      });
+      formData.append("file", file);
+      formData.append("type", "audio");
 
-      // Create a placeholder URL for the audio submission
-      const timestamp = Date.now();
-      const placeholderAudioUrl = `https://example.com/audio-submissions/${exerciseId}-${enrollmentId}-${timestamp}.webm`;
+      const res = await fetch("/api/upload/media", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Upload failed");
+      }
 
-      // Call the tRPC mutation
+      const uploadedUrl = data.fileUrl as string;
+
+      // Submit the uploaded URL to backend
       submitAudioMutation.mutate({
         exerciseId,
         enrollmentId,
-        audioFileUrl: placeholderAudioUrl,
+        audioFileUrl: uploadedUrl,
       });
     } catch (error) {
       console.error("Submission error:", error);
-      setError("Failed to submit recording. Please try again.");
+      setError("Failed to upload or submit recording. Please try again.");
     }
   };
 

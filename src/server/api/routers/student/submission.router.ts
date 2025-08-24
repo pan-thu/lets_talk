@@ -9,7 +9,8 @@ export const submissionRouter = createTRPCRouter({
       z.object({
         exerciseId: z.number(),
         enrollmentId: z.number(),
-        audioFileUrl: z.string().url(),
+        // Accept local file paths like /uploads/..., not just absolute URLs
+        audioFileUrl: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
