@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Eye,
 } from "lucide-react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { PaginationControls } from "~/_components/features/shared/PaginationControls";
@@ -25,6 +26,7 @@ export default function AdminPaymentsPage() {
     payment: any | null;
   }>({ isOpen: false, payment: null });
   const [rejectionReason, setRejectionReason] = useState("");
+  const [proofModalState, setProofModalState] = useState<{ isOpen: boolean; url: string; meta?: { course?: string; user?: string; ref?: string } | null }>({ isOpen: false, url: "", meta: null });
 
   const {
     data: paymentsData,
@@ -273,6 +275,9 @@ export default function AdminPaymentsPage() {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Proof
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Actions
                   </th>
                 </tr>
@@ -323,7 +328,30 @@ export default function AdminPaymentsPage() {
                         {payment.status.replace("_", " ")}
                       </span>
                     </td>
-                                         <td className="whitespace-nowrap px-6 py-4">
+                    <td className="whitespace-nowrap px-6 py-4">
+                      {(payment as any).proofImageUrl ? (
+                        <button
+                          onClick={() =>
+                            setProofModalState({
+                              isOpen: true,
+                              url: (payment as any).proofImageUrl as string,
+                              meta: {
+                                course: (payment as any).course?.title,
+                                user: (payment as any).user?.email,
+                                ref: (payment as any).paymentReferenceId,
+                              },
+                            })
+                          }
+                          className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                          title="View proof image"
+                        >
+                          <Eye className="h-3 w-3" /> View
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
                        {payment.status === "PROOF_SUBMITTED" ? (
                          <div className="flex space-x-2">
                            <button
@@ -434,6 +462,52 @@ export default function AdminPaymentsPage() {
                 : "Reject Payment"}
             </button>
           </div>
+        </div>
+      </AdminModalWrapper>
+
+      {/* View Proof Modal */}
+      <AdminModalWrapper
+        isOpen={proofModalState.isOpen}
+        onClose={() => setProofModalState({ isOpen: false, url: "", meta: null })}
+        title="Payment Proof"
+      >
+        <div className="space-y-3">
+          {proofModalState.meta && (
+            <div className="text-sm text-gray-700">
+              {proofModalState.meta.course && (
+                <div><span className="font-medium">Course:</span> {proofModalState.meta.course}</div>
+              )}
+              {proofModalState.meta.user && (
+                <div><span className="font-medium">Student:</span> {proofModalState.meta.user}</div>
+              )}
+              {proofModalState.meta.ref && (
+                <div><span className="font-medium">Reference:</span> {proofModalState.meta.ref}</div>
+              )}
+            </div>
+          )}
+          {proofModalState.url ? (
+            <div className="flex items-center justify-center">
+              <img
+                src={proofModalState.url}
+                alt="Payment proof"
+                className="max-h-[70vh] w-auto max-w-full rounded border"
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No proof image available.</p>
+          )}
+          {proofModalState.url && (
+            <div className="flex justify-end">
+              <a
+                href={proofModalState.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded bg-gray-800 px-3 py-1.5 text-xs text-white hover:bg-gray-900"
+              >
+                Open in new tab
+              </a>
+            </div>
+          )}
         </div>
       </AdminModalWrapper>
     </div>

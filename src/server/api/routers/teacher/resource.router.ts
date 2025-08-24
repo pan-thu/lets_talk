@@ -15,11 +15,17 @@ export const resourceRouter = createTRPCRouter({
       z.object({
         courseId: z.number().int().positive(),
         title: z.string().min(1, "Title is required"),
-        type: z.nativeEnum(ResourceType),
+        // Restrict to only VIDEO or AUDIO_EXERCISE
+        type: z.nativeEnum(ResourceType).refine((t) => t === "VIDEO" || t === "AUDIO_EXERCISE", {
+          message: "Type must be VIDEO or AUDIO_EXERCISE",
+        }),
         url: z.string().optional(),
         content: z.string().optional(),
-        week: z.number().int().positive(), // Week is now required and validated
+        week: z.number().int().positive(),
         releaseDate: z.date().optional(),
+        attachments: z.array(
+          z.object({ fileUrl: z.string().min(1), mimeType: z.string().min(1), filename: z.string().min(1) })
+        ).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -81,7 +87,11 @@ export const resourceRouter = createTRPCRouter({
             week,
             order: newOrder,
             url: resourceData.url || "",
+            attachments: resourceData.attachments && resourceData.attachments.length > 0 ? {
+              createMany: { data: resourceData.attachments.map(a => ({ fileUrl: a.fileUrl, mimeType: a.mimeType, filename: a.filename })) }
+            } : undefined,
           },
+          include: { attachments: true },
         });
 
         return {
@@ -104,12 +114,18 @@ export const resourceRouter = createTRPCRouter({
       z.object({
         resourceId: z.number().int().positive(),
         title: z.string().min(1).optional(),
-        type: z.nativeEnum(ResourceType).optional(),
+        type: z.nativeEnum(ResourceType).optional().refine((t) => !t || t === "VIDEO" || t === "AUDIO_EXERCISE", {
+          message: "Type must be VIDEO or AUDIO_EXERCISE",
+        }),
         url: z.string().optional(),
         content: z.string().optional(),
         week: z.number().int().positive().optional(),
-        order: z.number().int().min(0).optional(), // Keep for now, but might not be used
+        order: z.number().int().min(0).optional(),
         releaseDate: z.date().optional(),
+        // Replace attachments in full (simpler flow):
+        attachments: z.array(
+          z.object({ fileUrl: z.string().min(1), mimeType: z.string().min(1), filename: z.string().min(1) })
+        ).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -146,9 +162,28 @@ export const resourceRouter = createTRPCRouter({
       }
 
       try {
-        const updatedResource = await ctx.db.resource.update({
-          where: { id: resourceId },
-          data: updateData,
+        const updatedResource = await ctx.db.$transaction(async (prisma) => {
+          const baseUpdate = await prisma.resource.update({
+            where: { id: resourceId },
+            data: {
+              title: updateData.title,
+              type: updateData.type as any,
+              url: updateData.url,
+              content: updateData.content,
+              releaseDate: updateData.releaseDate,
+            },
+          });
+
+          if (updateData.attachments) {
+            await prisma.resourceAttachment.deleteMany({ where: { resourceId } });
+            if (updateData.attachments.length > 0) {
+              await prisma.resourceAttachment.createMany({
+                data: updateData.attachments.map((a) => ({ resourceId, fileUrl: a.fileUrl, mimeType: a.mimeType, filename: a.filename })),
+              });
+            }
+          }
+
+          return prisma.resource.findUnique({ where: { id: resourceId }, include: { attachments: true } });
         });
 
         return {
@@ -249,5 +284,44 @@ export const resourceRouter = createTRPCRouter({
           message: "Could not delete resource.",
         });
       }
+    }),
+
+  // Append new attachments to an existing resource (used for AUDIO_EXERCISE items)
+  addAttachments: teacherProcedure
+    .input(
+      z.object({
+        resourceId: z.number().int().positive(),
+        attachments: z.array(
+          z.object({ fileUrl: z.string().min(1), mimeType: z.string().min(1), filename: z.string().min(1) })
+        ).min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { resourceId, attachments } = input;
+      const teacherId = ctx.session.user.id;
+
+      // Verify ownership
+      const resource = await ctx.db.resource.findUnique({
+        where: { id: resourceId },
+        include: { course: { select: { teacherId: true } } },
+      });
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Resource not found." });
+      }
+      if (resource.course.teacherId !== teacherId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to modify this resource." });
+      }
+
+      await ctx.db.resourceAttachment.createMany({
+        data: attachments.map((a) => ({ resourceId, fileUrl: a.fileUrl, mimeType: a.mimeType, filename: a.filename })),
+      });
+
+      const updated = await ctx.db.resource.findUnique({
+        where: { id: resourceId },
+        include: { attachments: true },
+      });
+
+      return { success: true, attachments: updated?.attachments ?? [] };
     }),
 });

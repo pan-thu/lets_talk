@@ -94,25 +94,52 @@ export default function ExercisePage({
       {/* Combined Exercise Card */}
       <section className="relative flex-1">
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm md:p-6">
-          {/* Teacher Prompt Section */}
-          <div className="mb-6">
-            <TeacherPromptDisplay
-              textInstructions={exerciseData.textInstructions}
-              audioUrl={exerciseData.teacherAudioUrl}
-            />
+          {/* Teacher Audio Items */}
+          <div className="mb-6 space-y-4">
+            <p className="text-sm font-medium text-gray-700">Teacher Audio Items</p>
+            {exerciseData.audioItems && exerciseData.audioItems.length > 0 ? (
+              <ul className="space-y-3">
+                {exerciseData.audioItems.map((item: any, idx: number) => (
+                  <li key={item.attachmentId} className="rounded border bg-white p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-700">Item {idx + 1}</span>
+                      {item.mySubmission && (
+                        <span className="text-xs text-gray-500">Submitted</span>
+                      )}
+                    </div>
+                    <audio controls className="w-full">
+                      <source src={item.fileUrl} />
+                    </audio>
+                    {item.mySubmission && (
+                      <div className="mt-2 rounded bg-gray-50 p-2 text-sm text-gray-700">
+                        <div>Grade: {item.mySubmission.grade ?? "—"}</div>
+                        {item.mySubmission.feedback && (
+                          <div className="text-xs text-gray-600">Feedback: {item.mySubmission.feedback}</div>
+                        )}
+                      </div>
+                    )}
+                    {!item.submitted && (
+                      <div className="mt-3">
+                        <StudentAudioRecorder
+                          exerciseId={exerciseData.id}
+                          enrollmentId={exerciseData.enrollmentId}
+                          onSubmissionSuccess={handleSubmissionSuccess}
+                          resourceAttachmentId={item.attachmentId}
+                        />
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-600">No audio items yet.</p>
+            )}
           </div>
 
           {/* Divider */}
           <div className="my-6 border-t border-gray-200"></div>
 
-          {/* Student Recording Section */}
-          <div>
-            <StudentAudioRecorder
-              exerciseId={exerciseData.id}
-              enrollmentId={exerciseData.enrollmentId}
-              onSubmissionSuccess={handleSubmissionSuccess}
-            />
-          </div>
+          {/* Legacy single-item recorder removed in favor of per-item recorders above */}
         </div>
 
         {/* Recording Tips Card - Bottom Right */}

@@ -9,7 +9,9 @@ export const submissionRouter = createTRPCRouter({
       z.object({
         exerciseId: z.number(),
         enrollmentId: z.number(),
-        audioFileUrl: z.string().url(),
+        resourceAttachmentId: z.number(),
+        // Accept local file paths like /uploads/..., not just absolute URLs
+        audioFileUrl: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -38,6 +40,7 @@ export const submissionRouter = createTRPCRouter({
           courseId: enrollment.courseId,
           type: "AUDIO_EXERCISE",
         },
+        include: { attachments: { select: { id: true } } },
       });
 
       if (!exercise) {
@@ -47,52 +50,36 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
-      // Check if user already has a submission for this exercise
+      // Verify the attachment belongs to the exercise
+      const isAttachmentOfExercise = exercise.attachments.some((a) => a.id === input.resourceAttachmentId);
+      if (!isAttachmentOfExercise) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid exercise item." });
+      }
+
+      // Check if user already has a submission for this attachment (no resubmits allowed)
       const existingSubmission = await ctx.db.submission.findFirst({
         where: {
+          resourceAttachmentId: input.resourceAttachmentId,
           resourceId: input.exerciseId,
           enrollmentId: input.enrollmentId,
           studentId: ctx.session.user.id,
         },
       });
 
-      if (existingSubmission?.status === "GRADED") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "This exercise has already been graded and cannot be resubmitted.",
-        });
-      }
-
-      let submission;
-
       if (existingSubmission) {
-        // Update existing submission
-        submission = await ctx.db.submission.update({
-          where: {
-            id: existingSubmission.id,
-          },
-          data: {
-            audioUrl: input.audioFileUrl,
-            status: "PENDING_REVIEW",
-            submittedAt: new Date(),
-            grade: null, // Reset grade since it's a new submission
-            feedback: null, // Reset feedback
-            gradedAt: null,
-          },
-        });
-      } else {
-        // Create new submission
-        submission = await ctx.db.submission.create({
-          data: {
-            audioUrl: input.audioFileUrl,
-            status: "PENDING_REVIEW",
-            resourceId: input.exerciseId,
-            enrollmentId: input.enrollmentId,
-            studentId: ctx.session.user.id,
-          },
-        });
+        throw new TRPCError({ code: "FORBIDDEN", message: "You have already submitted for this exercise item." });
       }
+
+      const submission = await ctx.db.submission.create({
+        data: {
+          audioUrl: input.audioFileUrl,
+          status: "PENDING_REVIEW",
+          resourceId: input.exerciseId,
+          resourceAttachmentId: input.resourceAttachmentId,
+          enrollmentId: input.enrollmentId,
+          studentId: ctx.session.user.id,
+        },
+      });
 
       return {
         success: true,
@@ -126,22 +113,18 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
-      // Get submission for this exercise
-      const submission = await ctx.db.submission.findFirst({
+      // Get all submissions for this exercise (per attachment)
+      const submissions = await ctx.db.submission.findMany({
         where: {
           resourceId: input.exerciseId,
           enrollmentId: input.enrollmentId,
           studentId: ctx.session.user.id,
         },
         include: {
-          grader: {
-            select: {
-              name: true,
-            },
-          },
+          grader: { select: { name: true } },
         },
       });
 
-      return submission;
+      return submissions;
     }),
 });

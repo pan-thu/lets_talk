@@ -28,10 +28,6 @@ enum CourseType {
 
 enum ResourceType {
   VIDEO
-  PDF
-  LINK
-  TEXT
-  FILE
   AUDIO_EXERCISE
 }
 
@@ -218,7 +214,22 @@ model Resource {
   errorReports      ErrorReport[]
   submissions       Submission[]
 
+  attachments      ResourceAttachment[]
+
   @@index([courseId])
+}
+
+model ResourceAttachment {
+  id         Int      @id @default(autoincrement())
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resourceId Int
+  fileUrl    String
+  mimeType   String
+  filename   String
+  createdAt  DateTime @default(now())
+  submissions Submission[]
+
+  @@index([resourceId])
 }
 
 model CourseSession {
@@ -253,6 +264,9 @@ model Submission {
   resource     Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
   resourceId   Int?
 
+  resourceAttachment   ResourceAttachment? @relation(fields: [resourceAttachmentId], references: [id], onDelete: SetNull)
+  resourceAttachmentId Int?
+
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   enrollmentId Int
 
@@ -266,6 +280,8 @@ model Submission {
   @@index([studentId])
   @@index([graderId])
   @@index([resourceId])
+  @@index([resourceAttachmentId])
+  @@unique([resourceAttachmentId, enrollmentId, studentId])
 }
 
 model Payment {

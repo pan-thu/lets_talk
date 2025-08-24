@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, type ReactNode } from "react";
+import { use, useState, type ReactNode, useMemo, useRef } from "react";
 import {
   Plus,
   Edit,
@@ -15,6 +15,8 @@ import {
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { api } from "~/trpc/react";
 import { ResourceType } from "@prisma/client";
+import { useEffect } from "react";
+import { z } from "zod";
 
 // Group resources by week
 function groupResourcesByWeek(resources: any[]) {
@@ -26,6 +28,168 @@ function groupResourcesByWeek(resources: any[]) {
     acc[week].push(resource);
     return acc;
   }, {} as Record<number, any[]>);
+}
+
+// --- Submissions Section ---
+function TeacherSubmissionsSection({ courseId }: { courseId: number }) {
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING_REVIEW" | "GRADED">("ALL");
+
+  const { data, isLoading, error } = api.teacher.submission.getSubmissionsForCourse.useQuery({
+    courseId,
+    page,
+    limit: 10,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
+  });
+
+  const gradeMutation = api.teacher.submission.gradeSubmission.useMutation();
+
+  const [grading, setGrading] = useState<{ id: number; grade: string; feedback: string } | null>(null);
+  const submissions = data?.submissions ?? [];
+  const pages = data?.pagination.pages ?? 1;
+
+  const handleOpenGrade = (submission: any) => {
+    setGrading({ id: submission.id, grade: submission.grade?.toString() ?? "", feedback: submission.feedback ?? "" });
+  };
+
+  const handleGradeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!grading) return;
+    const parsed = z
+      .object({ grade: z.coerce.number().min(0).max(100), feedback: z.string().optional() })
+      .safeParse({ grade: grading.grade, feedback: grading.feedback });
+    if (!parsed.success) return;
+
+    await gradeMutation.mutateAsync({ submissionId: grading.id, grade: parsed.data.grade, feedback: parsed.data.feedback });
+    setGrading(null);
+  };
+
+  return (
+    <div className="rounded-lg border bg-white p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Student Submissions</h2>
+        <div className="flex items-center gap-2">
+          <select
+            className="rounded border p-2"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+          >
+            <option value="ALL">All</option>
+            <option value="PENDING_REVIEW">Pending Review</option>
+            <option value="GRADED">Graded</option>
+          </select>
+        </div>
+      </div>
+
+      {isLoading && <p className="text-gray-500">Loading submissions...</p>}
+      {error && <p className="text-red-500">Failed to load submissions.</p>}
+
+      {submissions.length === 0 && !isLoading ? (
+        <p className="text-gray-500">No submissions found.</p>
+      ) : (
+        <div className="space-y-3">
+          {submissions.map((s: any) => (
+            <div key={s.id} className="rounded border p-3">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">{s.student?.name || "Student"}</span> · {s.student?.email}
+                  </p>
+                  <p className="text-sm text-gray-600">Exercise: {s.resource?.title}</p>
+                  <p className="text-xs text-gray-500">Submitted {new Date(s.submittedAt).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {s.audioUrl && (
+                    <audio controls className="w-64">
+                      <source src={s.audioUrl} />
+                    </audio>
+                  )}
+                  <span className="rounded bg-gray-100 px-2 py-1 text-xs">{s.status}</span>
+                </div>
+              </div>
+
+              {s.feedback && (
+                <div className="mt-2 rounded bg-gray-50 p-2 text-sm text-gray-700">
+                  <p className="font-medium">Feedback:</p>
+                  <p>{s.feedback}</p>
+                </div>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+                  onClick={() => handleOpenGrade(s)}
+                >
+                  {s.status === "GRADED" ? "Update Grade" : "Grade"}
+                </button>
+                {s.grade != null && (
+                  <span className="text-sm text-gray-700">Grade: {s.grade}</span>
+                )}
+                {s.grader?.name && (
+                  <span className="text-xs text-gray-500">Graded by {s.grader.name}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pages > 1 && (
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <button
+            className="rounded border px-2 py-1 text-sm"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Prev
+          </button>
+          <span className="text-sm text-gray-600">Page {page} of {pages}</span>
+          <button
+            className="rounded border px-2 py-1 text-sm"
+            disabled={page >= pages}
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {grading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded bg-white p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Grade Submission</h3>
+              <button onClick={() => setGrading(null)}><X size={18} /></button>
+            </div>
+            <form onSubmit={handleGradeSubmit} className="space-y-3">
+              <input
+                type="number"
+                className="w-full rounded border p-2"
+                placeholder="Grade (0-100)"
+                value={grading.grade}
+                onChange={(e) => setGrading({ ...grading, grade: e.target.value })}
+                min={0}
+                max={100}
+                step={1}
+                required
+              />
+              <textarea
+                className="w-full rounded border p-2"
+                rows={4}
+                placeholder="Feedback (optional)"
+                value={grading.feedback}
+                onChange={(e) => setGrading({ ...grading, feedback: e.target.value })}
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" className="rounded border px-3 py-1.5" onClick={() => setGrading(null)}>Cancel</button>
+                <button type="submit" className="rounded bg-blue-600 px-4 py-1.5 text-white">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Resource item inside a week
@@ -45,6 +209,15 @@ function TeacherResourceItem({ resource, onEdit, onDelete }: { resource: any; on
         <span className="font-medium text-gray-800">{resource.title}</span>
       </div>
       <div className="flex items-center gap-2">
+        {resource.type === "AUDIO_EXERCISE" && (
+          <a
+            href={`/teacher/exercises/${resource.id}`}
+            className="rounded p-1.5 text-purple-600 hover:bg-purple-50"
+            title="Review Submissions"
+          >
+            Review
+          </a>
+        )}
         <button onClick={onEdit} className="rounded p-1.5 text-blue-600 hover:bg-blue-50" title="Edit Resource"><Edit size={16} /></button>
         <button onClick={onDelete} className="rounded p-1.5 text-red-600 hover:bg-red-50" title="Delete Resource"><Trash2 size={16} /></button>
       </div>
@@ -184,9 +357,9 @@ export default function TeacherCourseManagementPage({
       {isLoading && <div className="rounded-lg border bg-white p-6 shadow-sm"><p className="text-gray-500">Loading course details...</p></div>}
       {error && <div className="rounded-lg border bg-white p-6 shadow-sm"><p className="text-red-500">Error loading course: {error.message}</p></div>}
 
-        {data && (
+      {data && (
         <div className="space-y-6">
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
+          <div className="rounded-lg border bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-semibold">Course Content</h2>
             <div className="space-y-4">
               {weekNumbers.length > 0 ? (
@@ -204,18 +377,22 @@ export default function TeacherCourseManagementPage({
               ) : (
                 <p className="py-4 text-center text-gray-500">No content has been added to this course yet.</p>
               )}
-                            <button
+              <button
                 onClick={handleAddNewWeek}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-4 text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
               >
                 <Plus size={20} />
                 <span>Add New Week</span>
-                            </button>
-                          </div>
-                        </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Student Submissions Section */}
+          <TeacherSubmissionsSection courseId={courseId} />
+
           {/* Other sections like Live Sessions, Students etc. can go here */}
-                </div>
-              )}
+        </div>
+      )}
       
       {showResourceForm && (
         <ResourceForm
@@ -239,6 +416,10 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
     content: editingResource?.content || "",
     week: editingResource?.week || initialWeek || 1,
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const audioPickerRef = useRef<HTMLInputElement | null>(null);
 
   const utils = api.useUtils();
 
@@ -252,14 +433,84 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
     onError: (err) => alert(err.message)
     });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingResource) {
-      // Create a payload without week and order for updates
-      const { week, ...updateData } = formData;
-      updateMutation.mutate({ resourceId: editingResource.id, ...updateData });
-    } else {
-      createMutation.mutate({ courseId, ...formData });
+
+    try {
+      setUploadError(null);
+
+      // Only VIDEO or AUDIO_EXERCISE allowed
+      const mediaTypesRequiringFile: ResourceType[] = [
+        ResourceType.VIDEO,
+        ResourceType.AUDIO_EXERCISE,
+      ];
+
+      let finalUrl = formData.url;
+      // Collects any uploaded attachments from primary input (overflow) and the attachments input
+      const attachmentsPayload: { fileUrl: string; mimeType: string; filename: string }[] = [];
+
+      if (mediaTypesRequiringFile.includes(formData.type as ResourceType)) {
+        if (selectedFiles.length === 0 && !editingResource) {
+          setUploadError("Please select at least one file to upload for this resource type.");
+          return;
+        }
+
+        // For AUDIO_EXERCISE: all selected files are attachments (exercise items). main url stays empty
+        // For VIDEO: first selected becomes main url if video; rest go to attachments
+        if (selectedFiles.length > 0) {
+          const uploadedFileUrls: { fileUrl: string; mimeType: string; filename: string }[] = [];
+
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const f = selectedFiles[i]!;
+            const fd = new FormData();
+            const inferredType = formData.type === ResourceType.VIDEO ? "video" : "audio";
+            fd.append("file", f);
+            fd.append("type", inferredType);
+            const res = await fetch("/api/upload/media", { method: "POST", body: fd });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data?.error || "Upload failed");
+            }
+            uploadedFileUrls.push({ fileUrl: data.fileUrl as string, mimeType: f.type || "application/octet-stream", filename: f.name });
+          }
+
+          if (formData.type === ResourceType.VIDEO) {
+            // Main video url is the first uploaded; others go to attachments
+            finalUrl = uploadedFileUrls[0]?.fileUrl || "";
+            attachmentsPayload.push(...uploadedFileUrls.slice(1));
+          } else {
+            // AUDIO_EXERCISE: treat all as attachments (exercise items)
+            attachmentsPayload.push(...uploadedFileUrls);
+            finalUrl = "";
+          }
+        }
+      }
+
+      // Upload attachments (optional)
+      if (attachmentFiles.length > 0) {
+        for (const f of attachmentFiles) {
+          const afd = new FormData();
+          afd.append("file", f);
+          afd.append("type", "file");
+          const ar = await fetch("/api/upload/media", { method: "POST", body: afd });
+          const ad = await ar.json();
+          if (!ar.ok) {
+            throw new Error(ad?.error || "Attachment upload failed");
+          }
+          attachmentsPayload.push({ fileUrl: ad.fileUrl as string, mimeType: f.type || "application/octet-stream", filename: f.name });
+        }
+      }
+
+      const payload = { ...formData, url: finalUrl, attachments: attachmentsPayload };
+
+      if (editingResource) {
+        const { week, ...updateData } = payload;
+        updateMutation.mutate({ resourceId: editingResource.id, ...updateData });
+      } else {
+        createMutation.mutate({ courseId, ...payload });
+      }
+    } catch (err: any) {
+      setUploadError(err?.message || "Failed to upload file");
     }
   };
 
@@ -277,7 +528,92 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
           <select value={formData.type} onChange={e => setFormData(f => ({ ...f, type: e.target.value as ResourceType }))} className="w-full rounded border p-2">
             {Object.values(ResourceType).map(type => <option key={type} value={type}>{type.replace("_", " ")}</option>)}
           </select>
-          <input type="text" value={formData.url} onChange={e => setFormData(f => ({ ...f, url: e.target.value }))} placeholder="URL (e.g., video link)" className="w-full rounded border p-2" />
+          {/* Primary media input */}
+          {formData.type === ResourceType.VIDEO ? (
+            <div className="space-y-2">
+              <input
+                type="file"
+                className="w-full rounded border p-2"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null;
+                  setSelectedFiles(f ? [f] : []);
+                }}
+                accept="video/*"
+              />
+              {selectedFiles.length > 0 && (
+                <p className="text-xs text-gray-600">Selected: {selectedFiles[0]?.name}</p>
+              )}
+              {editingResource && selectedFiles.length === 0 && (
+                <p className="text-xs text-gray-500">Current video: {formData.url || "(none)"}</p>
+              )}
+              {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+            </div>
+          ) : formData.type === ResourceType.AUDIO_EXERCISE ? (
+            <div className="space-y-2">
+              {/* Chips list */}
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedFiles.map((f, idx) => (
+                    <span key={`${f.name}-${idx}`} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs text-gray-700">
+                      <span className="max-w-[180px] truncate" title={f.name}>{f.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))}
+                        className="rounded bg-red-100 px-1.5 py-0.5 text-red-600 hover:bg-red-200"
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => audioPickerRef.current?.click()}
+                  className="rounded border px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Add audio
+                </button>
+                <span className="text-xs text-gray-500">You can add multiple audio items</span>
+              </div>
+              <input
+                ref={audioPickerRef}
+                type="file"
+                className="hidden"
+                multiple
+                accept="audio/*"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+                  setSelectedFiles((prev) => [...prev, ...files]);
+                  // reset value so selecting same file again re-triggers change
+                  e.currentTarget.value = "";
+                }}
+              />
+              {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+            </div>
+          ) : (
+            <div className="rounded border bg-yellow-50 p-2 text-sm text-yellow-800">Unsupported type. Only Video or Audio.</div>
+          )}
+
+          {/* Attachment uploader (multiple) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Attachments (optional{formData.type === ResourceType.AUDIO_EXERCISE ? ", add more audio files here" : ""})
+            </label>
+            <input
+              type="file"
+              multiple
+              className="w-full rounded border p-2"
+              accept={".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,text/plain"}
+              onChange={(e) => setAttachmentFiles(Array.from(e.target.files || []))}
+            />
+            {attachmentFiles.length > 0 && (
+              <p className="text-xs text-gray-600">{attachmentFiles.length} file(s) selected</p>
+            )}
+          </div>
           <textarea value={formData.content} onChange={e => setFormData(f => ({ ...f, content: e.target.value }))} placeholder="Content/Description" className="w-full rounded border p-2" rows={3}></textarea>
           
           
