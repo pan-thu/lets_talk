@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/zip",
         "application/x-zip-compressed",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
       ],
     };
 

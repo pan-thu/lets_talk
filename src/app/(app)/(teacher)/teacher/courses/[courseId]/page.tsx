@@ -409,6 +409,7 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
 
   const utils = api.useUtils();
 
@@ -428,13 +429,11 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
     try {
       setUploadError(null);
 
-      // For media types that should use file upload, prefer uploading the selected file
+      // Only VIDEO or AUDIO_EXERCISE allowed
       const mediaTypesRequiringFile: ResourceType[] = [
         ResourceType.VIDEO,
         ResourceType.AUDIO_EXERCISE,
-        ResourceType.FILE,
-        ResourceType.PDF,
-      ].filter((t) => (ResourceType as any)[t] !== undefined) as ResourceType[];
+      ];
 
       let finalUrl = formData.url;
 
@@ -459,7 +458,23 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
         }
       }
 
-      const payload = { ...formData, url: finalUrl };
+      // Upload attachments (optional)
+      const attachmentsPayload: { fileUrl: string; mimeType: string; filename: string }[] = [];
+      if (attachmentFiles.length > 0) {
+        for (const f of attachmentFiles) {
+          const afd = new FormData();
+          afd.append("file", f);
+          afd.append("type", "file");
+          const ar = await fetch("/api/upload/media", { method: "POST", body: afd });
+          const ad = await ar.json();
+          if (!ar.ok) {
+            throw new Error(ad?.error || "Attachment upload failed");
+          }
+          attachmentsPayload.push({ fileUrl: ad.fileUrl as string, mimeType: f.type || "application/octet-stream", filename: f.name });
+        }
+      }
+
+      const payload = { ...formData, url: finalUrl, attachments: attachmentsPayload };
 
       if (editingResource) {
         const { week, ...updateData } = payload;
@@ -486,14 +501,14 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
           <select value={formData.type} onChange={e => setFormData(f => ({ ...f, type: e.target.value as ResourceType }))} className="w-full rounded border p-2">
             {Object.values(ResourceType).map(type => <option key={type} value={type}>{type.replace("_", " ")}</option>)}
           </select>
-          {/* File input for media types; keep URL for LINK/TEXT or when editing without new file */}
-          {(formData.type === ResourceType.VIDEO || formData.type === ResourceType.AUDIO_EXERCISE || formData.type === ResourceType.PDF || formData.type === ResourceType.FILE) ? (
+          {/* File input for media types (VIDEO/AUDIO) */}
+          {(formData.type === ResourceType.VIDEO || formData.type === ResourceType.AUDIO_EXERCISE) ? (
             <div className="space-y-2">
               <input
                 type="file"
                 className="w-full rounded border p-2"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                accept={formData.type === ResourceType.VIDEO ? "video/*" : formData.type === ResourceType.AUDIO_EXERCISE ? "audio/*" : formData.type === ResourceType.PDF ? "application/pdf" : undefined}
+                accept={formData.type === ResourceType.VIDEO ? "video/*" : "audio/*"}
               />
               {editingResource && !selectedFile && (
                 <p className="text-xs text-gray-500">Current file: {formData.url || "(none)"}</p>
@@ -501,8 +516,23 @@ function ResourceForm({ courseId, editingResource, initialWeek, onClose, onSucce
               {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
             </div>
           ) : (
-            <input type="text" value={formData.url} onChange={e => setFormData(f => ({ ...f, url: e.target.value }))} placeholder="URL (e.g., link)" className="w-full rounded border p-2" />
+            <div className="rounded border bg-yellow-50 p-2 text-sm text-yellow-800">Unsupported type. Only Video or Audio.</div>
           )}
+
+          {/* Attachment uploader (multiple) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Attachments (optional)</label>
+            <input
+              type="file"
+              multiple
+              className="w-full rounded border p-2"
+              accept={".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,text/plain"}
+              onChange={(e) => setAttachmentFiles(Array.from(e.target.files || []))}
+            />
+            {attachmentFiles.length > 0 && (
+              <p className="text-xs text-gray-600">{attachmentFiles.length} file(s) selected</p>
+            )}
+          </div>
           <textarea value={formData.content} onChange={e => setFormData(f => ({ ...f, content: e.target.value }))} placeholder="Content/Description" className="w-full rounded border p-2" rows={3}></textarea>
           
           
