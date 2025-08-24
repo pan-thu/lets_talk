@@ -5,7 +5,6 @@ import { unlink } from "fs/promises";
 import { join } from "path";
 
 import { createTRPCRouter, teacherProcedure } from "~/server/api/trpc";
-import { emitAudit } from "~/server/lib/audit";
 
 export const resourceRouter = createTRPCRouter({
   // ---- Teacher CRUD Operations ----
@@ -94,15 +93,6 @@ export const resourceRouter = createTRPCRouter({
           },
           include: { attachments: true },
         });
-
-        if (resource.type === "VIDEO" || resource.type === "AUDIO_EXERCISE") {
-          await emitAudit(ctx.db, {
-            type: "EXERCISE_ADDED",
-            title: `Exercise added: ${resource.title}`,
-            courseId,
-            actorUserId: teacherId,
-          });
-        }
 
         return {
           success: true,

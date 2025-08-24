@@ -31,16 +31,6 @@ enum ResourceType {
   AUDIO_EXERCISE
 }
 
-enum AuditEventType {
-  LIVE_SCHEDULED
-  LIVE_UPDATED
-  LIVE_CANCELLED
-  RECORDING_UPLOADED
-  EXERCISE_ADDED
-  SUBMISSION_GRADED
-  ENROLLMENT_ACTIVATED
-}
-
 enum PaymentStatus {
   AWAITING_PAYMENT_PROOF
   PROOF_SUBMITTED
@@ -98,7 +88,6 @@ model User {
   lessonCompletions      UserLessonCompletion[]
   lessonComments         LessonComment[]
   errorReports           ErrorReport[]
-  auditEvents            AuditEvent[]
 }
 
 model Account {
@@ -159,7 +148,6 @@ model Course {
   courseSessions CourseSession[]
   announcements  Announcement[] @relation("CourseAnnouncements")
   payments       Payment[]
-  auditEvents    AuditEvent[]
 
   @@index([teacherId])
 }
@@ -399,21 +387,4 @@ model ErrorReport {
 
   @@index([userId])
   @@index([lessonId])
-}
-
-model AuditEvent {
-  id           Int            @id @default(autoincrement())
-  type         AuditEventType
-  title        String
-  occurredAt   DateTime       @default(now())
-  createdAt    DateTime       @default(now())
-
-  course       Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId     Int?
-
-  actor        User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-  actorUserId  String?
-
-  @@index([courseId])
-  @@index([occurredAt])
 }

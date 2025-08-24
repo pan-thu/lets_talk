@@ -3,7 +3,6 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { PaymentStatus, EnrollmentStatus } from "@prisma/client";
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
-import { emitAudit } from "~/server/lib/audit";
 
 export const paymentRouter = createTRPCRouter({
   listAllPayments: adminProcedure
@@ -110,16 +109,9 @@ export const paymentRouter = createTRPCRouter({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Payment not found or not pending.' });
         }
 
-        const enrollment = await prisma.enrollment.update({
+        await prisma.enrollment.update({
           where: { id: payment.enrollmentId },
           data: { status: EnrollmentStatus.ACTIVE, activatedAt: new Date() },
-        });
-
-        await emitAudit(ctx.db, {
-          type: "ENROLLMENT_ACTIVATED",
-          title: `Enrollment activated for course ${payment.courseId}`,
-          courseId: payment.courseId,
-          actorUserId: ctx.session.user.id,
         });
 
         return payment;

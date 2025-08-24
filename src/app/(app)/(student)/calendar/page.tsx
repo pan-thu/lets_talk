@@ -1,39 +1,5 @@
 "use client";
 
-import { api } from "~/trpc/react";
-
-export default function StudentCalendarPage() {
-  const { data, isLoading, error } = api.public.calendar.student.useQuery({});
-
-  if (isLoading) return <div className="p-6">Loading calendar…</div>;
-  if (error) return <div className="p-6 text-red-600">Failed to load calendar.</div>;
-
-  return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Calendar</h1>
-      <div className="space-y-3">
-        {(data ?? []).map((e: any) => (
-          <div key={e.id} className="rounded border bg-white p-3">
-            <div className="flex items-center justify-between">
-              <div className="font-medium">{e.title}</div>
-              <span className="text-xs uppercase text-gray-500">{e.type}</span>
-            </div>
-            <div className="text-xs text-gray-600">
-              {e.startTime ? new Date(e.startTime).toLocaleString() : new Date(e.occurredAt).toLocaleString()}
-              {e.endTime && ` - ${new Date(e.endTime).toLocaleString()}`}
-            </div>
-            {e.type === "LIVE" && (
-              <div className="mt-1 text-xs text-gray-500">Status: {e.status}</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-"use client";
-
 import { useState, useEffect } from "react";
 import BreadcrumbsWithAnimation from "~/_components/ui/BreadcrumbsWithAnimation";
 import { MonthNavigator } from "~/_components/features/shared/MonthNavigator";
