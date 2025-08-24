@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, teacherProcedure } from "~/server/api/trpc";
+import { emitAudit } from "~/server/lib/audit";
 
 export const liveSessionRouter = createTRPCRouter({
   // Create a new live session
@@ -69,6 +70,14 @@ export const liveSessionRouter = createTRPCRouter({
             endTime,
             week,
           },
+        });
+
+        await emitAudit(ctx.db, {
+          type: "LIVE_SCHEDULED",
+          title: `Live session scheduled: ${title}`,
+          courseId,
+          actorUserId: teacherId,
+          occurredAt: startTime,
         });
 
         return session;
@@ -140,6 +149,14 @@ export const liveSessionRouter = createTRPCRouter({
           data: updateData,
         });
 
+        await emitAudit(ctx.db, {
+          type: "LIVE_UPDATED",
+          title: `Live session updated: ${updatedSession.title}`,
+          courseId: updatedSession.courseId,
+          actorUserId: teacherId,
+          occurredAt: updatedSession.startTime,
+        });
+
         return updatedSession;
       } catch (error) {
         console.error("Error updating live session:", error);
@@ -186,8 +203,15 @@ export const liveSessionRouter = createTRPCRouter({
       }
 
       try {
-        await ctx.db.courseSession.delete({
+        const deleted = await ctx.db.courseSession.delete({
           where: { id: sessionId },
+        });
+
+        await emitAudit(ctx.db, {
+          type: "LIVE_CANCELLED",
+          title: `Live session cancelled: ${deleted.title}`,
+          courseId: deleted.courseId,
+          actorUserId: teacherId,
         });
 
         return { success: true };
@@ -241,6 +265,13 @@ export const liveSessionRouter = createTRPCRouter({
         const updatedSession = await ctx.db.courseSession.update({
           where: { id: sessionId },
           data: { recordingUrl },
+        });
+
+        await emitAudit(ctx.db, {
+          type: "RECORDING_UPLOADED",
+          title: `Recording uploaded: ${updatedSession.title}`,
+          courseId: updatedSession.courseId,
+          actorUserId: teacherId,
         });
 
         return updatedSession;

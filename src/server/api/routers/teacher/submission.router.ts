@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, teacherProcedure } from "~/server/api/trpc";
+import { emitAudit } from "~/server/lib/audit";
 
 export const submissionRouter = createTRPCRouter({
   // Get submissions grouped by attachment for one exercise (teacher view)
@@ -219,6 +220,13 @@ export const submissionRouter = createTRPCRouter({
             student: { select: { name: true, email: true } },
             resource: { select: { title: true } },
           },
+        });
+
+        await emitAudit(ctx.db, {
+          type: "SUBMISSION_GRADED",
+          title: `Submission graded: ${updatedSubmission.resource?.title ?? "exercise"}`,
+          courseId: undefined,
+          actorUserId: teacherId,
         });
 
         return {

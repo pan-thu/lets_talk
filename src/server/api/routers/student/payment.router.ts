@@ -8,6 +8,7 @@ import {
 } from "@prisma/client";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { emitAudit } from "~/server/lib/audit";
 
 export const paymentRouter = createTRPCRouter({
   confirmManualPayment: protectedProcedure
