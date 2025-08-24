@@ -110,6 +110,14 @@ export default function ExercisePage({
                     <audio controls className="w-full">
                       <source src={item.fileUrl} />
                     </audio>
+                    {item.mySubmission?.audioUrl && (
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-gray-600">Your submission</p>
+                        <audio controls className="w-full">
+                          <source src={item.mySubmission.audioUrl} />
+                        </audio>
+                      </div>
+                    )}
                     {item.mySubmission && (
                       <div className="mt-2 rounded bg-gray-50 p-2 text-sm text-gray-700">
                         <div>Grade: {item.mySubmission.grade ?? "—"}</div>
